@@ -1,0 +1,35 @@
+name: applicants_app
+description: Applicants Information System — HRMDO, Province of Pangasinan.
+publish_to: 'none'
+version: 3.0.0+1
+
+environment:
+  sdk: ^3.12.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  archive: ^3.6.1
+  dotted_border: ^2.1.0
+  excel: ^4.0.6
+  file_selector: ^1.0.3
+  flutter_riverpod: ^3.1.0
+  go_router: ^16.3.0
+  http: ^1.5.0
+  intl: ^0.20.0
+  printing: ^5.13.4
+  sentry_flutter: ^8.0.0
+  shared_preferences: ^2.3.0
+  window_manager: ^0.5.1
+  csv: ^8.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  storybook_flutter: ^0.14.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/pgo_seal.png

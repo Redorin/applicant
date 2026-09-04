@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Clean Minimal</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', -apple-system, sans-serif; background: #FAFBFC; color: #111827; }
+
+    /* Top bar */
+    .topbar { height: 56px; background: #fff; border-bottom: 1px solid #E5E7EB; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; position: sticky; top: 0; z-index: 10; }
+    .topbar-left { display: flex; align-items: center; gap: 24px; }
+    .topbar-logo { font-size: 16px; font-weight: 700; color: #111827; display: flex; align-items: center; gap: 8px; }
+    .topbar-logo-mark { width: 28px; height: 28px; background: #111827; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; }
+    .topbar-nav { display: flex; gap: 4px; }
+    .topbar-link { padding: 8px 12px; font-size: 13px; font-weight: 500; color: #6B7280; border-radius: 6px; cursor: pointer; transition: all 0.15s; }
+    .topbar-link:hover { color: #111827; background: #F3F4F6; }
+    .topbar-link.active { color: #111827; background: #F3F4F6; font-weight: 600; }
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+    .topbar-btn { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.15s; color: #6B7280; }
+    .topbar-btn:hover { background: #F3F4F6; color: #111827; }
+    .topbar-avatar { width: 32px; height: 32px; background: #111827; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 600; }
+
+    /* Content */
+    .content { max-width: 1200px; margin: 0 auto; padding: 32px; }
+
+    /* Header */
+    .page-header { margin-bottom: 32px; }
+    .page-greeting { font-size: 14px; color: #6B7280; margin-bottom: 4px; }
+    .page-title { font-size: 28px; font-weight: 700; color: #111827; letter-spacing: -0.5px; }
+    .page-meta { font-size: 13px; color: #9CA3AF; margin-top: 4px; }
+
+    /* Stats - 4 column, very clean */
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+    .stat-card { background: #fff; border: 1px solid #E5E7EB; border-radius: 12px; padding: 24px; position: relative; }
+    .stat-card:hover { border-color: #D1D5DB; }
+    .stat-label { font-size: 13px; color: #6B7280; margin-bottom: 8px; }
+    .stat-value { font-size: 36px; font-weight: 700; color: #111827; letter-spacing: -1px; line-height: 1; }
+    .stat-change { display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; font-size: 12px; font-weight: 600; }
+    .stat-change.up { color: #059669; }
+    .stat-change.down { color: #DC2626; }
+    .stat-spark { position: absolute; bottom: 24px; right: 24px; display: flex; align-items: flex-end; gap: 2px; height: 32px; opacity: 0.5; }
+    .stat-spark-bar { width: 4px; background: #D1D5DB; border-radius: 2px; }
+
+    /* Chart section */
+    .chart-section { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 32px; }
+
+    /* Card */
+    .card { background: #fff; border: 1px solid #E5E7EB; border-radius: 12px; overflow: hidden; }
+    .card-header { padding: 20px 24px 0; display: flex; align-items: center; justify-content: space-between; }
+    .card-title { font-size: 15px; font-weight: 600; color: #111827; }
+    .card-actions { display: flex; gap: 4px; }
+    .card-action { padding: 6px 12px; font-size: 12px; font-weight: 500; color: #6B7280; border-radius: 6px; cursor: pointer; border: none; background: none; transition: all 0.15s; }
+    .card-action:hover { background: #F3F4F6; color: #111827; }
+    .card-action.active { background: #111827; color: #fff; }
+    .card-body { padding: 24px; }
+
+    /* Bar chart - clean */
+    .bars { display: flex; align-items: flex-end; gap: 8px; height: 200px; }
+    .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .bar-num { font-size: 11px; font-weight: 600; color: #9CA3AF; opacity: 0; transition: opacity 0.15s; }
+    .bar-col:hover .bar-num { opacity: 1; }
+    .bar { width: 100%; background: #111827; border-radius: 4px 4px 0 0; transition: all 0.2s; }
+    .bar:hover { background: #374151; }
+    .bar-month { font-size: 11px; color: #9CA3AF; }
+
+    /* Donut */
+    .donut-wrap { display: flex; align-items: center; gap: 32px; }
+    .donut { position: relative; width: 180px; height: 180px; }
+    .donut-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+    .donut-num { font-size: 32px; font-weight: 700; color: #111827; }
+    .donut-label { font-size: 12px; color: #9CA3AF; }
+    .donut-legend { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+    .legend-row { display: flex; align-items: center; gap: 10px; }
+    .legend-color { width: 12px; height: 12px; border-radius: 3px; }
+    .legend-text { flex: 1; font-size: 13px; color: #374151; }
+    .legend-val { font-size: 13px; font-weight: 600; color: #111827; }
+
+    /* Bottom grid */
+    .bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    /* List items */
+    .list-item { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid #F3F4F6; }
+    .list-item:last-child { border-bottom: none; }
+    .list-rank { width: 24px; font-size: 12px; font-weight: 600; color: #D1D5DB; }
+    .list-name { flex: 1; font-size: 14px; color: #111827; }
+    .list-bar { width: 120px; height: 4px; background: #F3F4F6; border-radius: 2px; overflow: hidden; }
+    .list-fill { height: 100%; background: #111827; border-radius: 2px; }
+    .list-val { font-size: 14px; font-weight: 600; color: #111827; width: 40px; text-align: right; }
+
+    /* Feed */
+    .feed-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid #F3F4F6; }
+    .feed-item:last-child { border-bottom: none; }
+    .feed-dot { width: 8px; height: 8px; border-radius: 50%; background: #D1D5DB; margin-top: 5px; }
+    .feed-dot.green { background: #059669; }
+    .feed-dot.blue { background: #2563EB; }
+    .feed-dot.amber { background: #D97706; }
+    .feed-body { flex: 1; }
+    .feed-text { font-size: 13px; color: #374151; line-height: 1.5; }
+    .feed-text strong { color: #111827; font-weight: 600; }
+    .feed-time { font-size: 11px; color: #9CA3AF; margin-top: 2px; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-logo">
+        <div class="topbar-logo-mark">H</div>
+        HRMDO
+      </div>
+      <div class="topbar-nav">
+        <div class="topbar-link active">Dashboard</div>
+        <div class="topbar-link">Applicants</div>
+        <div class="topbar-link">Applications</div>
+        <div class="topbar-link">Hired</div>
+        <div class="topbar-link">Reports</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-btn">🔍</div>
+      <div class="topbar-btn">🔔</div>
+      <div class="topbar-avatar">RG</div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="page-header">
+      <div class="page-greeting">Good morning</div>
+      <h1 class="page-title">Dashboard</h1>
+      <div class="page-meta">Thursday, August 13, 2026 • This year</div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total applicants</div>
+        <div class="stat-value">1,247</div>
+        <div class="stat-change up">↑ 12.5%</div>
+        <div class="stat-spark">
+          <div class="stat-spark-bar" style="height:40%"></div>
+          <div class="stat-spark-bar" style="height:55%"></div>
+          <div class="stat-spark-bar" style="height:35%"></div>
+          <div class="stat-spark-bar" style="height:70%"></div>
+          <div class="stat-spark-bar" style="height:45%"></div>
+          <div class="stat-spark-bar" style="height:80%"></div>
+          <div class="stat-spark-bar" style="height:60%"></div>
+          <div class="stat-spark-bar" style="height:90%"></div>
+          <div class="stat-spark-bar" style="height:75%"></div>
+          <div class="stat-spark-bar" style="height:95%"></div>
+          <div class="stat-spark-bar" style="height:85%"></div>
+          <div class="stat-spark-bar" style="height:100%"></div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Applications</div>
+        <div class="stat-value">342</div>
+        <div class="stat-change up">↑ 8.2%</div>
+        <div class="stat-spark">
+          <div class="stat-spark-bar" style="height:30%"></div>
+          <div class="stat-spark-bar" style="height:45%"></div>
+          <div class="stat-spark-bar" style="height:25%"></div>
+          <div class="stat-spark-bar" style="height:60%"></div>
+          <div class="stat-spark-bar" style="height:40%"></div>
+          <div class="stat-spark-bar" style="height:75%"></div>
+          <div class="stat-spark-bar" style="height:55%"></div>
+          <div class="stat-spark-bar" style="height:85%"></div>
+          <div class="stat-spark-bar" style="height:70%"></div>
+          <div class="stat-spark-bar" style="height:90%"></div>
+          <div class="stat-spark-bar" style="height:80%"></div>
+          <div class="stat-spark-bar" style="height:95%"></div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Hired</div>
+        <div class="stat-value">28</div>
+        <div class="stat-change up">↑ 24.1%</div>
+        <div class="stat-spark">
+          <div class="stat-spark-bar" style="height:20%"></div>
+          <div class="stat-spark-bar" style="height:35%"></div>
+          <div class="stat-spark-bar" style="height:15%"></div>
+          <div class="stat-spark-bar" style="height:50%"></div>
+          <div class="stat-spark-bar" style="height:30%"></div>
+          <div class="stat-spark-bar" style="height:65%"></div>
+          <div class="stat-spark-bar" style="height:45%"></div>
+          <div class="stat-spark-bar" style="height:80%"></div>
+          <div class="stat-spark-bar" style="height:60%"></div>
+          <div class="stat-spark-bar" style="height:85%"></div>
+          <div class="stat-spark-bar" style="height:75%"></div>
+          <div class="stat-spark-bar" style="height:90%"></div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">On process</div>
+        <div class="stat-value">156</div>
+        <div class="stat-change down">↓ 5.3%</div>
+        <div class="stat-spark">
+          <div class="stat-spark-bar" style="height:50%"></div>
+          <div class="stat-spark-bar" style="height:65%"></div>
+          <div class="stat-spark-bar" style="height:45%"></div>
+          <div class="stat-spark-bar" style="height:80%"></div>
+          <div class="stat-spark-bar" style="height:55%"></div>
+          <div class="stat-spark-bar" style="height:90%"></div>
+          <div class="stat-spark-bar" style="height:70%"></div>
+          <div class="stat-spark-bar" style="height:95%"></div>
+          <div class="stat-spark-bar" style="height:85%"></div>
+          <div class="stat-spark-bar" style="height:100%"></div>
+          <div class="stat-spark-bar" style="height:92%"></div>
+          <div class="stat-spark-bar" style="height:98%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-section">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Applications by month</span>
+          <div class="card-actions">
+            <button class="card-action">6M</button>
+            <button class="card-action active">12M</button>
+            <button class="card-action">All</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="bars">
+            <div class="bar-col"><div class="bar-num">18</div><div class="bar" style="height:36%"></div><div class="bar-month">J</div></div>
+            <div class="bar-col"><div class="bar-num">24</div><div class="bar" style="height:48%"></div><div class="bar-month">F</div></div>
+            <div class="bar-col"><div class="bar-num">15</div><div class="bar" style="height:30%"></div><div class="bar-month">M</div></div>
+            <div class="bar-col"><div class="bar-num">32</div><div class="bar" style="height:64%"></div><div class="bar-month">A</div></div>
+            <div class="bar-col"><div class="bar-num">28</div><div class="bar" style="height:56%"></div><div class="bar-month">M</div></div>
+            <div class="bar-col"><div class="bar-num">38</div><div class="bar" style="height:76%"></div><div class="bar-month">J</div></div>
+            <div class="bar-col"><div class="bar-num">35</div><div class="bar" style="height:70%"></div><div class="bar-month">J</div></div>
+            <div class="bar-col"><div class="bar-num">42</div><div class="bar" style="height:84%"></div><div class="bar-month">A</div></div>
+            <div class="bar-col"><div class="bar-num">30</div><div class="bar" style="height:60%"></div><div class="bar-month">S</div></div>
+            <div class="bar-col"><div class="bar-num">45</div><div class="bar" style="height:90%"></div><div class="bar-month">O</div></div>
+            <div class="bar-col"><div class="bar-num">40</div><div class="bar" style="height:80%"></div><div class="bar-month">N</div></div>
+            <div class="bar-col"><div class="bar-num">50</div><div class="bar" style="height:100%"></div><div class="bar-month">D</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">By status</span>
+        </div>
+        <div class="card-body">
+          <div class="donut-wrap">
+            <div class="donut">
+              <svg viewBox="0 0 180 180">
+                <circle cx="90" cy="90" r="70" fill="none" stroke="#111827" stroke-width="28" stroke-dasharray="154 286" stroke-dashoffset="0" transform="rotate(-90 90 90)"/>
+                <circle cx="90" cy="90" r="70" fill="none" stroke="#6B7280" stroke-width="28" stroke-dasharray="110 330" stroke-dashoffset="-154" transform="rotate(-90 90 90)"/>
+                <circle cx="90" cy="90" r="70" fill="none" stroke="#D1D5DB" stroke-width="28" stroke-dasharray="78 362" stroke-dashoffset="-264" transform="rotate(-90 90 90)"/>
+                <circle cx="90" cy="90" r="70" fill="none" stroke="#E5E7EB" stroke-width="28" stroke-dasharray="48 392" stroke-dashoffset="-342" transform="rotate(-90 90 90)"/>
+              </svg>
+              <div class="donut-center">
+                <div class="donut-num">342</div>
+                <div class="donut-label">total</div>
+              </div>
+            </div>
+            <div class="donut-legend">
+              <div class="legend-row">
+                <div class="legend-color" style="background:#111827"></div>
+                <span class="legend-text">On Process</span>
+                <span class="legend-val">156</span>
+              </div>
+              <div class="legend-row">
+                <div class="legend-color" style="background:#6B7280"></div>
+                <span class="legend-text">For Interview</span>
+                <span class="legend-val">112</span>
+              </div>
+              <div class="legend-row">
+                <div class="legend-color" style="background:#D1D5DB"></div>
+                <span class="legend-text">Recommended</span>
+                <span class="legend-val">70</span>
+              </div>
+              <div class="legend-row">
+                <div class="legend-color" style="background:#E5E7EB"></div>
+                <span class="legend-text">Hired</span>
+                <span class="legend-val">44</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-grid">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Top municipalities</span>
+        </div>
+        <div class="card-body">
+          <div class="list-item">
+            <span class="list-rank">01</span>
+            <span class="list-name">Calasiao</span>
+            <div class="list-bar"><div class="list-fill" style="width:100%"></div></div>
+            <span class="list-val">89</span>
+          </div>
+          <div class="list-item">
+            <span class="list-rank">02</span>
+            <span class="list-name">Dagupan City</span>
+            <div class="list-bar"><div class="list-fill" style="width:78%"></div></div>
+            <span class="list-val">69</span>
+          </div>
+          <div class="list-item">
+            <span class="list-rank">03</span>
+            <span class="list-name">Mangaldan</span>
+            <div class="list-bar"><div class="list-fill" style="width:62%"></div></div>
+            <span class="list-val">55</span>
+          </div>
+          <div class="list-item">
+            <span class="list-rank">04</span>
+            <span class="list-name">Binmaley</span>
+            <div class="list-bar"><div class="list-fill" style="width:48%"></div></div>
+            <span class="list-val">43</span>
+          </div>
+          <div class="list-item">
+            <span class="list-rank">05</span>
+            <span class="list-name">Lingayen</span>
+            <div class="list-bar"><div class="list-fill" style="width:35%"></div></div>
+            <span class="list-val">31</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Recent activity</span>
+        </div>
+        <div class="card-body">
+          <div class="feed-item">
+            <div class="feed-dot green"></div>
+            <div class="feed-body">
+              <div class="feed-text"><strong>Des Samson</strong> added Juan Dela Cruz</div>
+              <div class="feed-time">15 minutes ago</div>
+            </div>
+          </div>
+          <div class="feed-item">
+            <div class="feed-dot amber"></div>
+            <div class="feed-body">
+              <div class="feed-text"><strong>Kath Torres</strong> updated status for Maria Santos</div>
+              <div class="feed-time">1 hour ago</div>
+            </div>
+          </div>
+          <div class="feed-item">
+            <div class="feed-dot blue"></div>
+            <div class="feed-body">
+              <div class="feed-text"><strong>Hara Pascua</strong> hired Jose Reyes</div>
+              <div class="feed-time">2 hours ago</div>
+            </div>
+          </div>
+          <div class="feed-item">
+            <div class="feed-dot green"></div>
+            <div class="feed-body">
+              <div class="feed-text"><strong>Lyndon Felix</strong> generated monthly report</div>
+              <div class="feed-time">3 hours ago</div>
+            </div>
+          </div>
+          <div class="feed-item">
+            <div class="feed-dot"></div>
+            <div class="feed-body">
+              <div class="feed-text"><strong>Ann Vinluan</strong> archived 3 applicants</div>
+              <div class="feed-time">4 hours ago</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

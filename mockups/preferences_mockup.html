@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preferences Redesign Mockup</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #F0F2F8; color: #111827; }
+
+    .shell { display: flex; height: 100vh; }
+
+    /* Sidebar rail */
+    .rail { width: 56px; background: linear-gradient(180deg, #2D325A 0%, #1E2240 100%); display: flex; flex-direction: column; align-items: center; padding: 12px 0; gap: 4px; }
+    .rail-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #C5C9E0; cursor: pointer; font-size: 18px; }
+    .rail-icon:hover { background: rgba(255,255,255,0.08); }
+    .rail-icon.active { background: rgba(91,106,191,0.25); color: #fff; }
+    .rail-spacer { flex: 1; }
+
+    /* Main area */
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* Top bar */
+    .topbar { height: 48px; background: #fff; border-bottom: 1px solid #E4E7EF; display: flex; align-items: center; padding: 0 20px; gap: 12px; }
+    .topbar-title { font-size: 15px; font-weight: 600; color: #111827; }
+    .topbar-subtitle { font-size: 13px; color: #8B92A5; }
+
+    /* Content */
+    .content { flex: 1; padding: 20px; overflow-y: auto; }
+
+    /* Page header */
+    .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .page-title { font-size: 22px; font-weight: 700; color: #111827; }
+
+    /* Layout: profile left, settings right */
+    .prefs-layout { display: flex; gap: 24px; }
+
+    /* Profile card - left side */
+    .profile-card { width: 300px; flex-shrink: 0; background: #fff; border: 1px solid #E4E7EF; border-radius: 10px; padding: 24px; align-self: flex-start; }
+    .profile-avatar { width: 72px; height: 72px; border-radius: 50%; background: #5B6ABF; color: #fff; font-size: 24px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+    .profile-name { text-align: center; font-size: 16px; font-weight: 700; color: #111827; margin-bottom: 4px; }
+    .profile-username { text-align: center; font-size: 13px; color: #8B92A5; margin-bottom: 20px; }
+    .profile-divider { height: 1px; background: #E4E7EF; margin: 16px 0; }
+    .profile-section-title { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; color: #8B92A5; text-transform: uppercase; margin-bottom: 12px; }
+    .profile-info-row { display: flex; justify-content: space-between; padding: 6px 0; }
+    .profile-info-label { font-size: 13px; color: #8B92A5; }
+    .profile-info-value { font-size: 13px; font-weight: 600; color: #111827; }
+    .profile-edit-btn { width: 100%; margin-top: 16px; padding: 8px; border: 1px solid #E4E7EF; border-radius: 6px; background: #fff; color: #5B6ABF; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+    .profile-edit-btn:hover { background: #EEF0FB; border-color: #C7CDF0; }
+
+    /* Settings panels - right side */
+    .settings-panels { flex: 1; display: flex; flex-direction: column; gap: 20px; }
+
+    .settings-card { background: #fff; border: 1px solid #E4E7EF; border-radius: 10px; padding: 24px; }
+    .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+    .card-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .card-icon.blue { background: #E0E7FF; color: #4338CA; }
+    .card-icon.green { background: #DCFCE7; color: #166534; }
+    .card-icon.orange { background: #FEF3C7; color: #92400E; }
+    .card-title { font-size: 15px; font-weight: 700; color: #111827; }
+    .card-subtitle { font-size: 12px; color: #8B92A5; }
+
+    /* Form elements */
+    .form-row { display: flex; gap: 12px; margin-bottom: 16px; }
+    .form-group { flex: 1; }
+    .form-label { display: block; font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 6px; letter-spacing: 0.3px; }
+    .form-input { width: 100%; padding: 8px 12px; border: 1px solid #E4E7EF; border-radius: 6px; font-size: 14px; color: #111827; background: #F6F7FB; transition: all 0.15s; }
+    .form-input:focus { outline: none; border-color: #C7CDF0; background: #fff; }
+    .form-input::placeholder { color: #9CA3AF; }
+
+    /* Buttons */
+    .btn-row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+    .btn { padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+    .btn-ghost { background: transparent; border: none; color: #8B92A5; }
+    .btn-ghost:hover { color: #5B6ABF; background: #EEF0F6; }
+    .btn-primary { background: #5B6ABF; border: none; color: #fff; }
+    .btn-primary:hover { background: #4A59AE; }
+    .btn-danger { background: #E74C5E; border: none; color: #fff; }
+    .btn-danger:hover { background: #D43B4E; }
+
+    /* Toggle row */
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #F0F2F8; }
+    .toggle-row:last-child { border-bottom: none; }
+    .toggle-info { flex: 1; }
+    .toggle-label { font-size: 14px; font-weight: 500; color: #111827; }
+    .toggle-desc { font-size: 12px; color: #8B92A5; margin-top: 2px; }
+    .toggle { width: 40px; height: 22px; border-radius: 11px; background: #E4E7EF; position: relative; cursor: pointer; transition: background 0.2s; }
+    .toggle.on { background: #5B6ABF; }
+    .toggle::after { content: ''; position: absolute; width: 18px; height: 18px; border-radius: 50%; background: #fff; top: 2px; left: 2px; transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+    .toggle.on::after { transform: translateX(18px); }
+
+    /* Password section */
+    .password-section { margin-top: 20px; padding-top: 20px; border-top: 1px solid #F0F2F8; }
+    .password-title { font-size: 13px; font-weight: 600; color: #111827; margin-bottom: 16px; }
+
+    /* Error message */
+    .error-msg { background: #FEF2F2; border: 1px solid rgba(231,76,94,0.35); border-radius: 6px; padding: 8px 12px; margin-top: 8px; font-size: 12px; font-weight: 600; color: #E74C5E; }
+
+    /* Success state */
+    .success-indicator { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #166534; font-weight: 500; }
+
+    /* Version badge */
+    .version-badge { display: inline-block; padding: 2px 8px; background: #EEF0F6; border-radius: 4px; font-size: 11px; font-weight: 600; color: #5B6479; }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <!-- Sidebar Rail -->
+    <div class="rail">
+      <div class="rail-icon">📊</div>
+      <div class="rail-icon">👥</div>
+      <div class="rail-icon">📋</div>
+      <div class="rail-icon">📁</div>
+      <div class="rail-icon">📈</div>
+      <div class="rail-spacer"></div>
+      <div class="rail-icon active">⚙️</div>
+    </div>
+
+    <!-- Main Area -->
+    <div class="main">
+      <!-- Top Bar -->
+      <div class="topbar">
+        <span class="topbar-title">HRMDO Applicant System</span>
+        <span class="topbar-subtitle">|</span>
+        <span class="topbar-subtitle">Preferences</span>
+      </div>
+
+      <!-- Content -->
+      <div class="content">
+        <div class="page-header">
+          <h1 class="page-title">Preferences</h1>
+          <span class="version-badge">v3.0.0</span>
+        </div>
+
+        <!-- Layout -->
+        <div class="prefs-layout">
+          <!-- Profile Card (Left) -->
+          <div class="profile-card">
+            <div class="profile-avatar">RG</div>
+            <div class="profile-name">Reddrick M. Gonzales</div>
+            <div class="profile-username">@red</div>
+            
+            <div class="profile-divider"></div>
+            
+            <div class="profile-section-title">Account Details</div>
+            <div class="profile-info-row">
+              <span class="profile-info-label">Role</span>
+              <span class="profile-info-value">Staff</span>
+            </div>
+            <div class="profile-info-row">
+              <span class="profile-info-label">Database</span>
+              <span class="profile-info-value">SQL Server</span>
+            </div>
+            <div class="profile-info-row">
+              <span class="profile-info-label">Records</span>
+              <span class="profile-info-value">1,247 applicants</span>
+            </div>
+            
+            <button class="profile-edit-btn">Edit Profile Photo</button>
+          </div>
+
+          <!-- Settings Panels (Right) -->
+          <div class="settings-panels">
+            <!-- Personal Info Card -->
+            <div class="settings-card">
+              <div class="card-header">
+                <div class="card-icon blue">👤</div>
+                <div>
+                  <div class="card-title">Personal Information</div>
+                  <div class="card-subtitle">Update your name and profile details</div>
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">First Name</label>
+                  <input type="text" class="form-input" value="Reddrick M.">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Last Name</label>
+                  <input type="text" class="form-input" value="Gonzales">
+                </div>
+              </div>
+              
+              <div class="btn-row">
+                <button class="btn btn-ghost">Cancel</button>
+                <button class="btn btn-primary">Save Changes</button>
+              </div>
+            </div>
+
+            <!-- Password Card -->
+            <div class="settings-card">
+              <div class="card-header">
+                <div class="card-icon orange">🔒</div>
+                <div>
+                  <div class="card-title">Password & Security</div>
+                  <div class="card-subtitle">Manage your password and security settings</div>
+                </div>
+              </div>
+              
+              <div class="form-group" style="margin-bottom: 16px;">
+                <label class="form-label">Current Password</label>
+                <input type="password" class="form-input" placeholder="Enter current password">
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">New Password</label>
+                  <input type="password" class="form-input" placeholder="Enter new password">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Confirm Password</label>
+                  <input type="password" class="form-input" placeholder="Confirm new password">
+                </div>
+              </div>
+              
+              <div class="btn-row">
+                <button class="btn btn-primary">Change Password</button>
+              </div>
+            </div>
+
+            <!-- Notifications Card -->
+            <div class="settings-card">
+              <div class="card-header">
+                <div class="card-icon green">🔔</div>
+                <div>
+                  <div class="card-title">Notifications</div>
+                  <div class="card-subtitle">Configure your notification preferences</div>
+                </div>
+              </div>
+              
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <div class="toggle-label">Follow-up Alerts</div>
+                  <div class="toggle-desc">Show the bell badge and panel for applications with no follow-up in 30+ days</div>
+                </div>
+                <div class="toggle on"></div>
+              </div>
+              
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <div class="toggle-label">Email Notifications</div>
+                  <div class="toggle-desc">Receive email alerts for important updates (coming soon)</div>
+                </div>
+                <div class="toggle"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Toggle switching
+    document.querySelectorAll('.toggle').forEach(toggle => {
+      toggle.addEventListener('click', () => {
+        toggle.classList.toggle('on');
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Executive Summary</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Georgia', 'Times New Roman', serif; background: #FDFDFD; color: #1A1A1A; }
+
+    /* Official letterhead */
+    .letterhead { background: #1A365D; color: #fff; padding: 24px 40px; }
+    .letterhead-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .letterhead-seal { display: flex; align-items: center; gap: 16px; }
+    .seal-circle { width: 60px; height: 60px; border: 3px solid #C9A227; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+    .seal-text { font-size: 18px; font-weight: 700; letter-spacing: 1px; }
+    .seal-sub { font-size: 11px; color: #90CDF4; margin-top: 2px; letter-spacing: 2px; text-transform: uppercase; }
+    .letterhead-date { text-align: right; font-size: 12px; color: #90CDF4; }
+    .letterhead-date strong { color: #fff; font-size: 14px; display: block; margin-bottom: 4px; }
+    .letterhead-divider { height: 3px; background: linear-gradient(90deg, #C9A227 0%, #C9A227 50%, transparent 50%); }
+
+    /* Navigation */
+    .nav-bar { background: #fff; border-bottom: 2px solid #E2E8F0; padding: 0 40px; display: flex; gap: 0; }
+    .nav-item { padding: 14px 20px; font-size: 13px; font-weight: 500; color: #4A5568; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; font-family: system-ui; }
+    .nav-item:hover { color: #1A365D; }
+    .nav-item.active { color: #1A365D; border-bottom-color: #C9A227; font-weight: 600; }
+
+    /* Content */
+    .content { max-width: 1100px; margin: 0 auto; padding: 32px 40px; }
+
+    /* Section title */
+    .section-title { font-size: 14px; font-weight: 700; color: #1A365D; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #E2E8F0; }
+
+    /* Executive summary box */
+    .exec-summary { background: #F7FAFC; border: 1px solid #E2E8F0; border-left: 4px solid #1A365D; padding: 20px 24px; margin-bottom: 32px; font-size: 14px; color: #4A5568; line-height: 1.7; font-family: system-ui; }
+    .exec-summary strong { color: #1A1A1A; }
+
+    /* Stats in formal table style */
+    .formal-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: #E2E8F0; border: 1px solid #E2E8F0; margin-bottom: 32px; }
+    .formal-stat { background: #fff; padding: 20px; text-align: center; }
+    .formal-stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #718096; margin-bottom: 8px; font-family: system-ui; }
+    .formal-stat-value { font-size: 32px; font-weight: 700; color: #1A365D; }
+    .formal-stat-delta { font-size: 12px; color: #48BB78; margin-top: 4px; font-family: system-ui; }
+
+    /* Two column */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-bottom: 32px; }
+
+    /* Chart */
+    .formal-chart { display: flex; align-items: flex-end; gap: 12px; height: 180px; padding: 20px 0; border-bottom: 1px solid #E2E8F0; }
+    .formal-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .formal-bar { width: 100%; background: #1A365D; border-radius: 2px 2px 0 0; }
+    .formal-bar-label { font-size: 11px; color: #718096; font-family: system-ui; }
+    .formal-bar-value { font-size: 11px; font-weight: 700; color: #1A365D; font-family: system-ui; }
+
+    /* Municipality table */
+    .formal-table { width: 100%; border-collapse: collapse; font-family: system-ui; }
+    .formal-table th { text-align: left; padding: 10px 12px; font-size: 11px; font-weight: 600; color: #718096; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #1A365D; }
+    .formal-table td { padding: 10px 12px; font-size: 13px; color: #4A5568; border-bottom: 1px solid #E2E8F0; }
+    .formal-table tr:last-child td { border-bottom: none; }
+    .formal-table-num { font-weight: 700; color: #1A365D; }
+
+    /* Status table */
+    .status-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: #E2E8F0; border: 1px solid #E2E8F0; }
+    .status-cell { background: #fff; padding: 16px; text-align: center; }
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; margin: 0 auto 8px; }
+    .status-name { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #718096; margin-bottom: 4px; font-family: system-ui; }
+    .status-val { font-size: 24px; font-weight: 700; color: #1A365D; }
+    .status-pct { font-size: 11px; color: #A0AEC0; font-family: system-ui; }
+
+    /* Signature block */
+    .signature-block { margin-top: 48px; padding-top: 24px; border-top: 1px solid #E2E8F0; display: flex; justify-content: space-between; }
+    .signature-line { width: 200px; text-align: center; }
+    .signature-rule { height: 1px; background: #1A1A1A; margin-bottom: 8px; }
+    .signature-name { font-size: 13px; font-weight: 700; color: #1A1A1A; font-family: system-ui; }
+    .signature-title { font-size: 11px; color: #718096; font-family: system-ui; }
+
+    /* Footer */
+    .footer { text-align: center; padding: 24px; font-size: 11px; color: #A0AEC0; border-top: 1px solid #E2E8F0; margin-top: 40px; font-family: system-ui; }
+  </style>
+</head>
+<body>
+  <!-- Letterhead -->
+  <div class="letterhead">
+    <div class="letterhead-top">
+      <div class="letterhead-seal">
+        <div class="seal-circle">🏛️</div>
+        <div>
+          <div class="seal-text">HRMDO</div>
+          <div class="seal-sub">Human Resource Management and Development Office</div>
+        </div>
+      </div>
+      <div class="letterhead-date">
+        <strong>August 13, 2026</strong>
+        Reference: HRMDO-DASH-2026-08
+      </div>
+    </div>
+    <div class="letterhead-divider"></div>
+  </div>
+
+  <!-- Navigation -->
+  <div class="nav-bar">
+    <div class="nav-item active">Dashboard</div>
+    <div class="nav-item">Applicants</div>
+    <div class="nav-item">Applications</div>
+    <div class="nav-item">Hired Personnel</div>
+    <div class="nav-item">Reports</div>
+    <div class="nav-item">Settings</div>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+    <div class="section-title">Executive Summary</div>
+    
+    <div class="exec-summary">
+      As of <strong>August 13, 2026</strong>, the office has <strong>1,247 total applicants</strong> on file. 
+      Year-to-date applications stand at <strong>342</strong>, representing an <strong>8.2% increase</strong> from the same period last year. 
+      Of these, <strong>28 applicants have been successfully hired</strong>, a <strong>24.1% improvement</strong> over the previous year. 
+      Currently, <strong>156 applications are on process</strong>, with <strong>112 scheduled for interview</strong> and <strong>70 recommended</strong> for final review.
+    </div>
+
+    <!-- Formal stats -->
+    <div class="formal-stats">
+      <div class="formal-stat">
+        <div class="formal-stat-label">Total Applicants</div>
+        <div class="formal-stat-value">1,247</div>
+        <div class="formal-stat-delta">↑ 12.5% from last year</div>
+      </div>
+      <div class="formal-stat">
+        <div class="formal-stat-label">Applications (YTD)</div>
+        <div class="formal-stat-value">342</div>
+        <div class="formal-stat-delta">↑ 8.2% from last year</div>
+      </div>
+      <div class="formal-stat">
+        <div class="formal-stat-label">Hired (YTD)</div>
+        <div class="formal-stat-value">28</div>
+        <div class="formal-stat-delta">↑ 24.1% from last year</div>
+      </div>
+      <div class="formal-stat">
+        <div class="formal-stat-label">Pending Review</div>
+        <div class="formal-stat-value">156</div>
+        <div class="formal-stat-delta" style="color:#E53E3E;">↓ 5.3% from last month</div>
+      </div>
+    </div>
+
+    <!-- Two column -->
+    <div class="two-col">
+      <!-- Chart -->
+      <div>
+        <div class="section-title">Monthly Applications</div>
+        <div class="formal-chart">
+          <div class="formal-bar-col"><div class="formal-bar-value">18</div><div class="formal-bar" style="height:36%"></div><div class="formal-bar-label">Jan</div></div>
+          <div class="formal-bar-col"><div class="formal-bar-value">24</div><div class="formal-bar" style="height:48%"></div><div class="formal-bar-label">Feb</div></div>
+          <div class="formal-bar-col"><div class="formal-bar-value">15</div><div class="formal-bar" style="height:30%"></div><div class="formal-bar-label">Mar</div></div>
+          <div class="formal-bar-col"><div class="formal-bar-value">32</div><div class="formal-bar" style="height:64%"></div><div class="formal-bar-label">Apr</div></div>
+          <div class="formal-bar-col"><div class="formal-bar-value">28</div><div class="formal-bar" style="height:56%"></div><div class="formal-bar-label">May</div></div>
+          <div class="formal-bar-col"><div class="formal-bar-value">38</div><div class="formal-bar" style="height:76%"></div><div class="formal-bar-label">Jun</div></div>
+          <div class="formal-bar-col"><div class="formal-bar-value">35</div><div class="formal-bar" style="height:70%"></div><div class="formal-bar-label">Jul</div></div>
+          <div class="formal-bar-col"><div class="formal-bar-value">42</div><div class="formal-bar" style="height:84%"></div><div class="formal-bar-label">Aug</div></div>
+          <div class="formal-bar-col"><div class="formal-bar-value">30</div><div class="formal-bar" style="height:60%"></div><div class="formal-bar-label">Sep</div></div>
+          <div class="formal-bar-col"><div class="formal-bar-value">45</div><div class="formal-bar" style="height:90%"></div><div class="formal-bar-label">Oct</div></div>
+          <div class="formal-bar-col"><div class="formal-bar-value">40</div><div class="formal-bar" style="height:80%"></div><div class="formal-bar-label">Nov</div></div>
+          <div class="formal-bar-col"><div class="formal-bar-value">50</div><div class="formal-bar" style="height:100%"></div><div class="formal-bar-label">Dec</div></div>
+        </div>
+      </div>
+
+      <!-- Top municipalities -->
+      <div>
+        <div class="section-title">Top Municipalities</div>
+        <table class="formal-table">
+          <thead>
+            <tr><th>#</th><th>Municipality</th><th>Province</th><th style="text-align:right">Count</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>Calasiao</td><td>Pangasinan</td><td style="text-align:right" class="formal-table-num">89</td></tr>
+            <tr><td>2</td><td>Dagupan City</td><td>Pangasinan</td><td style="text-align:right" class="formal-table-num">69</td></tr>
+            <tr><td>3</td><td>Mangaldan</td><td>Pangasinan</td><td style="text-align:right" class="formal-table-num">55</td></tr>
+            <tr><td>4</td><td>Binmaley</td><td>Pangasinan</td><td style="text-align:right" class="formal-table-num">43</td></tr>
+            <tr><td>5</td><td>Lingayen</td><td>Pangasinan</td><td style="text-align:right" class="formal-table-num">31</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Status -->
+    <div class="section-title">Application Status Distribution</div>
+    <div class="status-grid">
+      <div class="status-cell">
+        <div class="status-dot" style="background:#48BB78"></div>
+        <div class="status-name">On Process</div>
+        <div class="status-val">156</div>
+        <div class="status-pct">35%</div>
+      </div>
+      <div class="status-cell">
+        <div class="status-dot" style="background:#4299E1"></div>
+        <div class="status-name">For Interview</div>
+        <div class="status-val">112</div>
+        <div class="status-pct">25%</div>
+      </div>
+      <div class="status-cell">
+        <div class="status-dot" style="background:#ECC94B"></div>
+        <div class="status-name">Recommended</div>
+        <div class="status-val">70</div>
+        <div class="status-pct">18%</div>
+      </div>
+      <div class="status-cell">
+        <div class="status-dot" style="background:#9F7AEA"></div>
+        <div class="status-name">Hired</div>
+        <div class="status-val">44</div>
+        <div class="status-pct">12%</div>
+      </div>
+      <div class="status-cell">
+        <div class="status-dot" style="background:#A0AEC0"></div>
+        <div class="status-name">Evaluated</div>
+        <div class="status-val">28</div>
+        <div class="status-pct">10%</div>
+      </div>
+    </div>
+
+    <!-- Signature -->
+    <div class="signature-block">
+      <div class="signature-line">
+        <div class="signature-rule"></div>
+        <div class="signature-name">Reddrick M. Gonzales</div>
+        <div class="signature-title">System Administrator</div>
+      </div>
+      <div class="signature-line">
+        <div class="signature-rule"></div>
+        <div class="signature-name">Lourdes C. Samson</div>
+        <div class="signature-title">HRMDO Head</div>
+      </div>
+    </div>
+
+    <div class="footer">
+      This report was generated automatically by the HRMDO Applicant Management System.<br>
+      For questions or clarifications, contact the Systems Administration Office.
+    </div>
+  </div>
+</body>
+</html>

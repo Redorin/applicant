@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Layout C — Analytics Dense</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #F0F2F8; color: #111827; }
+    .wrap { max-width: 1280px; margin: 0 auto; padding: 24px 32px; }
+    .badge { display: inline-block; background: #7E22CE; color: #fff; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; margin-bottom: 12px; letter-spacing: .5px; }
+    h1 { font-size: 22px; font-weight: 700; }
+    .sub { font-size: 14px; color: #8B92A5; margin-top: 2px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .period { display: inline-flex; gap: 2px; background: #F8F9FC; border: 1px solid #E4E7EF; border-radius: 10px; padding: 3px; }
+    .period span { padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; color: #8B92A5; cursor: pointer; }
+    .period span.active { background: #5B6ABF; color: #fff; }
+    .card { background: #fff; border: 1px solid #E4E7EF; border-radius: 10px; padding: 14px; box-shadow: 0 2px 8px rgba(17,24,39,.06); }
+    .card-title { font-size: 13px; font-weight: 700; color: #8B92A5; letter-spacing: .44px; text-transform: uppercase; }
+    .card-sub { font-size: 14px; color: #8B92A5; }
+    .card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid #E4E7EF; }
+    .link { font-size: 13px; color: #5B6ABF; font-weight: 600; cursor: pointer; }
+    /* Dense grid: 3 columns */
+    .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .grid2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .grid1-2 { display: grid; grid-template-columns: 1fr 2fr; gap: 12px; margin-bottom: 12px; }
+    /* Stats inline */
+    .stat-row { display: flex; gap: 12px; margin-bottom: 12px; }
+    .stat-pill { flex: 1; background: #fff; border: 1px solid #E4E7EF; border-radius: 10px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; }
+    .stat-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+    .stat-info { flex: 1; }
+    .stat-val { font-size: 22px; font-weight: 700; font-feature-settings: 'tnum'; }
+    .stat-lbl { font-size: 11px; color: #8B92A5; text-transform: uppercase; letter-spacing: .3px; }
+    /* Donut compact */
+    .donut-compact { display: flex; align-items: center; gap: 16px; }
+    .donut-svg { width: 120px; height: 120px; flex-shrink: 0; }
+    .legend-row { display: flex; align-items: center; gap: 6px; padding: 3px 0; }
+    .legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+    .legend-name { flex: 1; font-size: 11px; color: #495057; }
+    .legend-count { font-size: 11px; font-weight: 600; }
+    /* Heatmap compact */
+    .heatmap-wrap { padding: 0; }
+    .heatmap-months { display: flex; gap: 2px; margin-left: 32px; margin-bottom: 8px; }
+    .heatmap-months span { font-size: 10px; color: #8B92A5; min-width: 0; flex: 1; text-align: left; }
+    .heatmap-grid { display: flex; gap: 8px; }
+    .heatmap-days { display: flex; flex-direction: column; gap: 2px; }
+    .heatmap-days span { height: 13px; font-size: 10px; color: #8B92A5; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; }
+    .heatmap-cols { display: flex; gap: 3px; }
+    .heatmap-col { display: flex; flex-direction: column; gap: 3px; }
+    .heatmap-cell { width: 13px; height: 13px; border-radius: 3px; }
+    .l0 { background: #EBEDF0; } .l1 { background: #9BE9A8; } .l2 { background: #40C463; } .l3 { background: #30A14E; } .l4 { background: #216E39; }
+    .heatmap-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; padding: 0 4px; }
+    .heatmap-total { font-size: 12px; color: #495057; font-weight: 600; }
+    .heatmap-legend { display: flex; align-items: center; gap: 4px; }
+    .heatmap-legend span { font-size: 10px; color: #8B92A5; }
+    /* Bar compact */
+    .bar-compact { display: flex; align-items: flex-end; gap: 4px; height: 100px; }
+    .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+    .bar-val { font-size: 9px; font-weight: 600; color: #8B92A5; }
+    .bar { width: 100%; background: linear-gradient(to bottom,#4A59AE,#5B6ABF); border-radius: 3px 3px 0 0; min-height: 2px; }
+    .bar-lbl { font-size: 9px; color: #8B92A5; }
+    /* Activity compact */
+    .act-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
+    .act-item + .act-item { border-top: 1px solid #F0F2F8; }
+    .act-av { width: 26px; height: 26px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: #fff; flex-shrink: 0; }
+    .act-text { flex: 1; font-size: 11px; color: #495057; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .act-time { font-size: 9px; color: #8B92A5; flex-shrink: 0; }
+    /* Muni compact */
+    .muni-item { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+    .muni-rank { width: 18px; height: 18px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; }
+    .muni-name { flex: 1; font-size: 11px; font-weight: 500; }
+    .muni-bar { width: 60px; height: 4px; background: #F0F2F8; border-radius: 2px; overflow: hidden; }
+    .muni-fill { height: 100%; background: #5B6ABF; border-radius: 2px; }
+    .muni-cnt { font-size: 11px; font-weight: 600; width: 30px; text-align: right; }
+    /* Status mini */
+    .status-mini { display: flex; align-items: center; gap: 6px; padding: 4px 0; }
+    .status-mini + .status-mini { border-top: 1px solid #F0F2F8; }
+    .status-dot { width: 6px; height: 6px; border-radius: 2px; flex-shrink: 0; }
+    .status-name { flex: 1; font-size: 11px; }
+    .status-bar { width: 60px; height: 4px; background: #F0F2F8; border-radius: 2px; overflow: hidden; }
+    .status-fill { height: 100%; border-radius: 2px; }
+    .status-pct { font-size: 10px; color: #8B92A5; width: 24px; text-align: right; }
+    /* Today's overview */
+    .row-heatmap-today { display: grid; grid-template-columns: 1fr 320px; gap: 12px; margin-bottom: 12px; align-items: stretch; }
+    .heatmap-card { display: flex; flex-direction: column; }
+    .heatmap-card .card-head { margin-bottom: 8px; }
+    .heatmap-body { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+    .today-stat { display: flex; align-items: center; gap: 10px; padding: 12px 0; }
+    .today-stat + .today-stat { border-top: 1px solid #F0F2F8; }
+    .today-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+    .today-label { flex: 1; font-size: 13px; color: #495057; }
+    .today-val { font-size: 20px; font-weight: 700; min-width: 36px; text-align: right; }
+    .today-badge { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; margin-left: 8px; }
+    .today-actions { display: flex; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #F0F2F8; }
+    .action-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid #E4E7EF; background: #fff; color: #495057; }
+    .action-btn:hover { background: #F0F2F8; }
+    .action-btn.primary { background: #5B6ABF; color: #fff; border-color: #5B6ABF; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="badge">LAYOUT C</div>
+  <div class="topbar">
+    <div><h1>Dashboard</h1><p class="sub">Overview of applicant management activity</p></div>
+    <div class="period"><span>This month</span><span class="active">This year</span><span>All time</span></div>
+  </div>
+
+  <!-- Stats as compact pills -->
+  <div class="stat-row">
+    <div class="stat-pill"><div class="stat-icon" style="background:#EEF0FB;color:#5B6ABF">👥</div><div class="stat-info"><div class="stat-val">25,000</div><div class="stat-lbl">Applicants on file</div></div></div>
+    <div class="stat-pill"><div class="stat-icon" style="background:#DCFCE7;color:#166534">📋</div><div class="stat-info"><div class="stat-val">672</div><div class="stat-lbl">Applications YTD</div></div></div>
+    <div class="stat-pill"><div class="stat-icon" style="background:#FEF3C7;color:#92400E">✅</div><div class="stat-info"><div class="stat-val">0</div><div class="stat-lbl">Hired YTD</div></div></div>
+    <div class="stat-pill"><div class="stat-icon" style="background:#F3E8FF;color:#7E22CE">⏳</div><div class="stat-info"><div class="stat-val">4,710</div><div class="stat-lbl">On process</div></div></div>
+  </div>
+
+  <!-- Row 1: Heatmap + Today's Overview -->
+  <div class="row-heatmap-today">
+    <!-- Heatmap -->
+    <div class="card heatmap-card">
+      <div class="card-head"><div><div class="card-title">Contribution Activity</div><div class="card-sub">Daily applications over the past year</div></div></div>
+      <div class="heatmap-body">
+        <div class="heatmap-wrap">
+          <div class="heatmap-months">
+            <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span>
+          </div>
+          <div class="heatmap-grid">
+            <div class="heatmap-days">
+              <span></span><span>Mon</span><span></span><span>Wed</span><span></span><span>Fri</span><span></span>
+            </div>
+            <div style="flex:1;overflow-x:auto">
+              <div class="heatmap-cols" id="grid"></div>
+            </div>
+          </div>
+          <div class="heatmap-footer">
+            <span class="heatmap-total">672 contributions in 2026</span>
+            <div class="heatmap-legend">
+              <span>Less</span>
+              <div class="heatmap-cell l0" style="width:11px;height:11px"></div>
+              <div class="heatmap-cell l1" style="width:11px;height:11px"></div>
+              <div class="heatmap-cell l2" style="width:11px;height:11px"></div>
+              <div class="heatmap-cell l3" style="width:11px;height:11px"></div>
+              <div class="heatmap-cell l4" style="width:11px;height:11px"></div>
+              <span>More</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Today's Overview -->
+    <div class="card">
+      <div class="card-head">
+        <div><div class="card-title">Today's Overview</div><div class="card-sub">Thursday, Aug 13, 2026</div></div>
+      </div>
+      <div class="today-stat">
+        <div class="today-dot" style="background:#5B6ABF"></div>
+        <span class="today-label">New applications</span>
+        <span class="today-val">23</span>
+        <span class="today-badge" style="background:#DCFCE7;color:#166534">+8 vs avg</span>
+      </div>
+      <div class="today-stat">
+        <div class="today-dot" style="background:#166534"></div>
+        <span class="today-label">Reviewed</span>
+        <span class="today-val">15</span>
+      </div>
+      <div class="today-stat">
+        <div class="today-dot" style="background:#92400E"></div>
+        <span class="today-label">Interviews</span>
+        <span class="today-val">4</span>
+        <span class="today-badge" style="background:#FEF3C7;color:#92400E">2 today</span>
+      </div>
+      <div class="today-stat">
+        <div class="today-dot" style="background:#7E22CE"></div>
+        <span class="today-label">Actions needed</span>
+        <span class="today-val">7</span>
+        <span class="today-badge" style="background:#FEE2E2;color:#991B1B">3 urgent</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 2: 3-column dense grid -->
+  <div class="grid3">
+    <!-- Donut -->
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Status Distribution</div></div></div>
+      <div class="donut-compact">
+        <svg class="donut-svg" viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="44" fill="none" stroke="#166534" stroke-width="18" stroke-dasharray="100 176" stroke-dashoffset="0" transform="rotate(-90 60 60)"/>
+          <circle cx="60" cy="60" r="44" fill="none" stroke="#5B6ABF" stroke-width="18" stroke-dasharray="70 206" stroke-dashoffset="-100" transform="rotate(-90 60 60)"/>
+          <circle cx="60" cy="60" r="44" fill="none" stroke="#92400E" stroke-width="18" stroke-dasharray="22 254" stroke-dashoffset="-170" transform="rotate(-90 60 60)"/>
+          <circle cx="60" cy="60" r="44" fill="none" stroke="#7E22CE" stroke-width="18" stroke-dasharray="13 263" stroke-dashoffset="-192" transform="rotate(-90 60 60)"/>
+          <text x="60" y="57" text-anchor="middle" font-size="16" font-weight="700" fill="#111827">35,339</text>
+          <text x="60" y="70" text-anchor="middle" font-size="9" fill="#8B92A5">Total</text>
+        </svg>
+        <div>
+          <div class="legend-row"><div class="legend-dot" style="background:#166534"></div><span class="legend-name">Active File</span><span class="legend-count">73%</span></div>
+          <div class="legend-row"><div class="legend-dot" style="background:#5B6ABF"></div><span class="legend-name">On Process</span><span class="legend-count">13%</span></div>
+          <div class="legend-row"><div class="legend-dot" style="background:#92400E"></div><span class="legend-name">(blank)</span><span class="legend-count">4%</span></div>
+          <div class="legend-row"><div class="legend-dot" style="background:#7E22CE"></div><span class="legend-name">Hired</span><span class="legend-count">2%</span></div>
+        </div>
+      </div>
+    </div>
+    <!-- Bar -->
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Monthly Trend</div><div class="card-sub">Last 12 months</div></div></div>
+      <div class="bar-compact">
+        <div class="bar-col"><div class="bar-val">172</div><div class="bar" style="height:74%"></div><div class="bar-lbl">Sep</div></div>
+        <div class="bar-col"><div class="bar-val">146</div><div class="bar" style="height:63%"></div><div class="bar-lbl">Oct</div></div>
+        <div class="bar-col"><div class="bar-val">47</div><div class="bar" style="height:20%"></div><div class="bar-lbl">Nov</div></div>
+        <div class="bar-col"><div class="bar-val">43</div><div class="bar" style="height:18%"></div><div class="bar-lbl">Dec</div></div>
+        <div class="bar-col"><div class="bar-val">121</div><div class="bar" style="height:52%"></div><div class="bar-lbl">Jan</div></div>
+        <div class="bar-col"><div class="bar-val">232</div><div class="bar" style="height:100%"></div><div class="bar-lbl">Feb</div></div>
+        <div class="bar-col"><div class="bar-val">125</div><div class="bar" style="height:54%"></div><div class="bar-lbl">Mar</div></div>
+        <div class="bar-col"><div class="bar-val">53</div><div class="bar" style="height:23%"></div><div class="bar-lbl">Apr</div></div>
+        <div class="bar-col"><div class="bar-val">110</div><div class="bar" style="height:47%"></div><div class="bar-lbl">May</div></div>
+        <div class="bar-col"><div class="bar-val">30</div><div class="bar" style="height:13%"></div><div class="bar-lbl">Jun</div></div>
+        <div class="bar-col"><div class="bar-val">1</div><div class="bar" style="height:2px"></div><div class="bar-lbl">Jul</div></div>
+      </div>
+    </div>
+    <!-- Status list -->
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Status Breakdown</div></div></div>
+      <div class="status-mini"><div class="status-dot" style="background:#166534"></div><span class="status-name">Active File</span><div class="status-bar"><div class="status-fill" style="width:73%;background:#166534"></div></div><span class="status-pct">73%</span></div>
+      <div class="status-mini"><div class="status-dot" style="background:#5B6ABF"></div><span class="status-name">On Process</span><div class="status-bar"><div class="status-fill" style="width:13%;background:#5B6ABF"></div></div><span class="status-pct">13%</span></div>
+      <div class="status-mini"><div class="status-dot" style="background:#92400E"></div><span class="status-name">(blank)</span><div class="status-bar"><div class="status-fill" style="width:4%;background:#92400E"></div></div><span class="status-pct">4%</span></div>
+      <div class="status-mini"><div class="status-dot" style="background:#7E22CE"></div><span class="status-name">Hired</span><div class="status-bar"><div class="status-fill" style="width:2%;background:#7E22CE"></div></div><span class="status-pct">2%</span></div>
+      <div class="status-mini"><div class="status-dot" style="background:#8B92A5"></div><span class="status-name">Active Files</span><div class="status-bar"><div class="status-fill" style="width:2%;background:#8B92A5"></div></div><span class="status-pct">2%</span></div>
+      <div class="status-mini"><div class="status-dot" style="background:#E74C5E"></div><span class="status-name">Promotion</span><div class="status-bar"><div class="status-fill" style="width:1%;background:#E74C5E"></div></div><span class="status-pct">0%</span></div>
+    </div>
+  </div>
+
+  <!-- Row 3: Activity + Muni side by side -->
+  <div class="grid2-1">
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Recent Activity</div></div><span class="link">View logs</span></div>
+      <div class="act-item"><div class="act-av" style="background:#5B6ABF">RE</div><div class="act-text">red signed in</div><div class="act-time">just now</div></div>
+      <div class="act-item"><div class="act-av" style="background:#5B6ABF">RE</div><div class="act-text">red signed in</div><div class="act-time">1h ago</div></div>
+      <div class="act-item"><div class="act-av" style="background:#166534">KA</div><div class="act-text">Failed sign-in attempt ("kath")</div><div class="act-time">2h ago</div></div>
+      <div class="act-item"><div class="act-av" style="background:#92400E">DE</div><div class="act-text">des signed out</div><div class="act-time">2h ago</div></div>
+      <div class="act-item"><div class="act-av" style="background:#7E22CE">HP</div><div class="act-text">hara added applicant Juan Dela Cruz</div><div class="act-time">3h ago</div></div>
+      <div class="act-item"><div class="act-av" style="background:#E74C5E">AV</div><div class="act-text">ann archived 3 applicants</div><div class="act-time">4h ago</div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Top Municipalities</div></div><span class="link">View all</span></div>
+      <div class="muni-item"><div class="muni-rank" style="background:#FEF3C7;color:#92400E">1</div><span class="muni-name">Lingayen</span><div class="muni-bar"><div class="muni-fill" style="width:100%"></div></div><span class="muni-cnt">257</span></div>
+      <div class="muni-item"><div class="muni-rank" style="background:#EFF1F6;color:#5B6479">2</div><span class="muni-name">Binmaley</span><div class="muni-bar"><div class="muni-fill" style="width:28%"></div></div><span class="muni-cnt">73</span></div>
+      <div class="muni-item"><div class="muni-rank" style="background:#FED7AA;color:#9A3412">3</div><span class="muni-name">Bugallon</span><div class="muni-bar"><div class="muni-fill" style="width:19%"></div></div><span class="muni-cnt">48</span></div>
+      <div class="muni-item"><div class="muni-rank" style="background:#F8F9FC;color:#8B92A5">4</div><span class="muni-name">San Carlos City</span><div class="muni-bar"><div class="muni-fill" style="width:19%"></div></div><span class="muni-cnt">48</span></div>
+      <div class="muni-item"><div class="muni-rank" style="background:#F8F9FC;color:#8B92A5">5</div><span class="muni-name">Dagupan City</span><div class="muni-bar"><div class="muni-fill" style="width:10%"></div></div><span class="muni-cnt">26</span></div>
+      <div class="muni-item"><div class="muni-rank" style="background:#F8F9FC;color:#8B92A5">6</div><span class="muni-name">Labrador</span><div class="muni-bar"><div class="muni-fill" style="width:8%"></div></div><span class="muni-cnt">21</span></div>
+      <div class="muni-item"><div class="muni-rank" style="background:#F8F9FC;color:#8B92A5">7</div><span class="muni-name">Mangatarem</span><div class="muni-bar"><div class="muni-fill" style="width:7%"></div></div><span class="muni-cnt">17</span></div>
+      <div class="muni-item"><div class="muni-rank" style="background:#F8F9FC;color:#8B92A5">8</div><span class="muni-name">Alaminos City</span><div class="muni-bar"><div class="muni-fill" style="width:5%"></div></div><span class="muni-cnt">14</span></div>
+    </div>
+  </div>
+</div>
+<script>
+const grid=document.getElementById('grid');
+const today=new Date();
+const start=new Date(today);
+start.setDate(start.getDate()-364-start.getDay());
+for(let w=0;w<53;w++){
+  const col=document.createElement('div');
+  col.className='heatmap-col';
+  for(let d=0;d<7;d++){
+    const cell=document.createElement('div');
+    cell.className='heatmap-cell';
+    const dt=new Date(start);
+    dt.setDate(dt.getDate()+w*7+d);
+    if(dt>today){
+      cell.style.visibility='hidden';
+    }else{
+      const r=Math.random();
+      cell.classList.add(r<.3?'l0':r<.5?'l1':r<.7?'l2':r<.85?'l3':'l4');
+    }
+    col.appendChild(cell);
+  }
+  grid.appendChild(col);
+}
+</script>
+</body>
+</html>

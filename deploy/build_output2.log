@@ -1,0 +1,9 @@
+﻿== Publishing ApplicantsApi (Release) ==
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  ApplicantsApi -> D:\Applicant-System-HRMDO\HRMDO-Flutter-Recreation\backend\ApplicantsApi\bin\Release\net10.0\ApplicantsApi.dll
+  ApplicantsApi -> D:\Applicant-System-HRMDO\HRMDO-Flutter-Recreation\deploy\api\
+== Building Flutter app (Windows release) ==
+Building Windows application...                                   164.3s
+√ Built build\windows\x64\runner\Release\applicants_app.exe
+Done. Launch with D:\Applicant-System-HRMDO\HRMDO-Flutter-Recreation\deploy\Start-HRMDO.ps1

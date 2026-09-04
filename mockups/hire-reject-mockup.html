@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HRMDO — Hire / Reject Mockup</title>
+<style>
+  :root {
+    --navy: #2D3748;
+    --muted: #718096;
+    --line: #E2E8F0;
+    --surface: #FFFFFF;
+    --surface2: #FAFBFD;
+    --ground: #F5F6FA;
+    --green: #38A169;
+    --green-light: #C6F6D5;
+    --red: #E53E3E;
+    --red-light: #FED7D7;
+    --yellow: #FEFCBF;
+    --yellow-dark: #975A16;
+    --green-dark: #276749;
+    --red-dark: #C53030;
+    --blue: #4299E1;
+    --amber: #F6E05E;
+    --radius: 8px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--ground);
+    color: var(--navy);
+    padding: 32px;
+  }
+
+  .container { max-width: 920px; margin: 0 auto; }
+
+  h1 { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+
+  /* ── Tabs ─────────────────────────────────────────────── */
+  .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  .tab {
+    padding: 10px 16px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+  }
+  .tab.active {
+    background: var(--surface);
+    border: 1.5px solid var(--navy);
+    font-weight: 600;
+  }
+  .tab:not(.active) {
+    background: #F0F1F5;
+    border: 1.5px solid transparent;
+    color: var(--muted);
+  }
+  .tab:hover:not(.active) { background: #E8EAF0; }
+  .badge {
+    background: var(--navy);
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    min-width: 22px;
+    text-align: center;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .badge.pulse { animation: pulse 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  @keyframes pulse {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.3); }
+    100% { transform: scale(1); }
+  }
+
+  /* ── Header row ───────────────────────────────────────── */
+  .grid-header {
+    display: grid;
+    grid-template-columns: 36px 3fr 2fr 2fr 2fr;
+    height: 40px;
+    padding: 0 12px;
+    background: #EDF2F7;
+    border-radius: 6px;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  /* ── Row tile ─────────────────────────────────────────── */
+  .row-list { position: relative; }
+
+  .row {
+    display: grid;
+    grid-template-columns: 36px 3fr 2fr 2fr 2fr;
+    height: 52px;
+    padding: 0 12px;
+    align-items: center;
+    border-bottom: 1px solid #F0F1F5;
+    background: var(--surface);
+    transition: opacity 0.3s, transform 0.3s, background 0.2s;
+    position: relative;
+  }
+  .row:nth-child(even) { background: var(--surface2); }
+
+  .row.flash-red {
+    animation: flashRed 0.3s ease;
+  }
+  @keyframes flashRed {
+    0%   { background: rgba(229, 62, 62, 0.15); }
+    100% { background: var(--surface); }
+  }
+
+  .row.rejected {
+    background: rgba(229, 62, 62, 0.04) !important;
+  }
+
+  .row.exit {
+    opacity: 0;
+    transform: translateX(-30%);
+    pointer-events: none;
+  }
+
+  .row .checkbox { width: 32px; }
+  .row .checkbox input { accent-color: var(--navy); cursor: pointer; }
+
+  .applicant-cell { display: flex; align-items: center; gap: 8px; }
+  .avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: #EDF2F7;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; color: var(--muted);
+    flex-shrink: 0;
+  }
+  .name { font-size: 13px; font-weight: 500; }
+  .municipality { font-size: 13px; color: #4A5568; }
+
+  /* ── Status pill ──────────────────────────────────────── */
+  .pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .pill.on-process     { background: var(--yellow); color: var(--yellow-dark); }
+  .pill.recommended    { background: var(--green-light); color: var(--green-dark); }
+  .pill.interview-set  { background: var(--yellow); color: var(--yellow-dark); }
+  .pill.rejected       { background: var(--red-light); color: var(--red-dark); }
+
+  /* ── Action buttons ───────────────────────────────────── */
+  .actions { display: flex; gap: 6px; }
+  .btn {
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1.5px solid;
+    background: transparent;
+    transition: all 0.15s;
+  }
+  .btn-hire {
+    border-color: var(--green);
+    color: var(--green);
+  }
+  .btn-hire:hover { background: var(--green); color: white; }
+  .btn-reject {
+    border-color: var(--red);
+    color: var(--red);
+  }
+  .btn-reject:hover { background: var(--red); color: white; }
+  .btn:disabled {
+    border-color: var(--line);
+    color: #A0AEC0;
+    cursor: not-allowed;
+    background: transparent !important;
+  }
+
+  /* ── Dialog overlay ───────────────────────────────────── */
+  .overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.35);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s;
+    z-index: 100;
+  }
+  .overlay.open { opacity: 1; pointer-events: auto; }
+
+  .dialog {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    width: 400px;
+    max-width: 90vw;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    transform: translateY(10px);
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .overlay.open .dialog { transform: translateY(0); }
+
+  .dialog-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 16px;
+  }
+  .dialog-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .dialog-icon.green { background: var(--green-light); color: var(--green); }
+  .dialog-icon.red   { background: var(--red-light); color: var(--red); }
+  .dialog-title { font-size: 16px; font-weight: 600; }
+
+  .applicant-preview {
+    padding: 10px;
+    border-radius: 8px;
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 16px;
+    font-size: 14px; font-weight: 600;
+  }
+  .applicant-preview.green-bg { background: #F7FAFC; }
+  .applicant-preview.red-bg   { background: #FFF5F5; }
+  .applicant-preview .avatar {
+    width: 32px; height: 32px; font-size: 14px;
+  }
+  .applicant-preview.green-bg .avatar { background: #EDF2F7; color: var(--muted); }
+  .applicant-preview.red-bg .avatar   { background: var(--red-light); color: var(--red); }
+
+  .dialog-field { margin-bottom: 12px; }
+  .dialog-field label {
+    display: block;
+    font-size: 12px; font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .dialog-field input, .dialog-field button {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    font-size: 13px;
+    background: white;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .dialog-field input:focus, .dialog-field button:focus {
+    outline: none;
+    border-color: var(--blue);
+  }
+  .dialog-field button { color: var(--muted); }
+  .dialog-field button.has-date { color: var(--navy); font-weight: 500; }
+
+  .dialog-note {
+    font-size: 13px; color: #718096; line-height: 1.5;
+  }
+
+  .dialog-actions {
+    display: flex; justify-content: flex-end; gap: 8px;
+    margin-top: 20px;
+  }
+  .dialog-actions button {
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-size: 13px; font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+  }
+  .btn-cancel {
+    background: transparent;
+    color: var(--muted);
+  }
+  .btn-cancel:hover { background: #F7FAFC; }
+  .btn-confirm-green {
+    background: var(--green);
+    color: white;
+  }
+  .btn-confirm-green:hover { background: #2F855A; }
+  .btn-confirm-green:disabled { background: #A0AEC0; cursor: not-allowed; }
+  .btn-confirm-red {
+    background: var(--red);
+    color: white;
+  }
+  .btn-confirm-red:hover { background: #C53030; }
+
+  /* ── Undo banner ──────────────────────────────────────── */
+  .undo-banner {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--navy);
+    color: white;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    opacity: 0;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 200;
+    white-space: nowrap;
+  }
+  .undo-banner.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  .undo-btn {
+    color: var(--amber);
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 13px;
+    letter-spacing: 0.3px;
+  }
+  .undo-btn:hover { text-decoration: underline; }
+
+  /* ── Instruction callout ──────────────────────────────── */
+  .callout {
+    background: #EBF4FF;
+    border: 1px solid #BEE3F8;
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    color: #2B6CB0;
+    line-height: 1.5;
+  }
+  .callout strong { font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>HRMDO — Hire / Reject Mockup</h1>
+  <p class="subtitle">Interactive prototype — click Hire or Reject to see the proposed animations</p>
+
+  <div class="callout">
+    <strong>Try it:</strong> Click <strong>Hire</strong> on any row to see the dialog + fade-out animation + undo banner.
+    Click <strong>Reject</strong> to see the red flash + status change + undo banner.
+    The <strong>UNDO</strong> button reverses the action.
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active" id="tab-list" onclick="switchTab('list')">
+      List of Applicants
+      <span class="badge" id="badge-list">6</span>
+    </div>
+    <div class="tab" id="tab-hired" onclick="switchTab('hired')">
+      Hired Applicants
+      <span class="badge" id="badge-hired">0</span>
+    </div>
+  </div>
+
+  <!-- List view -->
+  <div id="view-list">
+    <div class="grid-header">
+      <div></div>
+      <div>APPLICANT</div>
+      <div>MUNICIPALITY</div>
+      <div>STATUS</div>
+      <div>ACTION</div>
+    </div>
+    <div class="row-list" id="row-list"></div>
+  </div>
+
+  <!-- Hired view (hidden by default) -->
+  <div id="view-hired" style="display:none">
+    <div class="grid-header">
+      <div></div>
+      <div>APPLICANT</div>
+      <div>MUNICIPALITY</div>
+      <div>DATE HIRED</div>
+      <div>FINAL POSITION</div>
+    </div>
+    <div class="row-list" id="row-hired"></div>
+    <div id="empty-hired" style="text-align:center;padding:48px;color:var(--muted);font-size:13px;display:none">
+      No hired applicants yet.
+    </div>
+  </div>
+</div>
+
+<!-- Hire dialog -->
+<div class="overlay" id="hire-overlay" onclick="if(event.target===this)closeHireDialog()">
+  <div class="dialog">
+    <div class="dialog-header">
+      <div class="dialog-icon green">✓</div>
+      <div class="dialog-title" id="hire-dialog-title">Hire applicant</div>
+    </div>
+    <div class="applicant-preview green-bg" id="hire-preview">
+      <div class="avatar">M</div>
+      <span>Applicant Name</span>
+    </div>
+    <div class="dialog-field">
+      <label>Final Position</label>
+      <input type="text" id="hire-position" placeholder="e.g. Admin Aide III" oninput="validateHire()">
+    </div>
+    <div class="dialog-field">
+      <label>Date Hired</label>
+      <button id="hire-date-btn" onclick="pickDate()">📅 Pick date hired</button>
+    </div>
+    <div class="dialog-actions">
+      <button class="btn-cancel" onclick="closeHireDialog()">Cancel</button>
+      <button class="btn-confirm-green" id="hire-confirm-btn" disabled onclick="confirmHire()">Hire</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reject dialog -->
+<div class="overlay" id="reject-overlay" onclick="if(event.target===this)closeRejectDialog()">
+  <div class="dialog">
+    <div class="dialog-header">
+      <div class="dialog-icon red">✗</div>
+      <div class="dialog-title">Reject Application</div>
+    </div>
+    <div class="applicant-preview red-bg" id="reject-preview">
+      <div class="avatar">M</div>
+      <span>Applicant Name</span>
+    </div>
+    <p class="dialog-note">This applicant will be marked as Rejected and removed from the active list.</p>
+    <div class="dialog-actions">
+      <button class="btn-cancel" onclick="closeRejectDialog()">Cancel</button>
+      <button class="btn-confirm-red" onclick="confirmReject()">Reject</button>
+    </div>
+  </div>
+</div>
+
+<!-- Undo banner -->
+<div class="undo-banner" id="undo-banner">
+  <span id="undo-message"></span>
+  <span class="undo-btn" onclick="doUndo()">UNDO</span>
+</div>
+
+<script>
+const applicants = [
+  { id: 1, name: 'Maria Santos',       municipality: 'Maramag',  status: 'On Process',   initials: 'MS' },
+  { id: 2, name: 'Juan Dela Cruz',     municipality: 'Kitaotao', status: 'On Process',   initials: 'JD' },
+  { id: 3, name: 'Ana Reyes',          municipality: 'Quezon',   status: 'Recommended',  initials: 'AR' },
+  { id: 4, name: 'Pedro Mendoza',      municipality: 'Damulog',  status: 'Interview Set',initials: 'PM' },
+  { id: 5, name: 'Rosa Garcia',        municipality: 'Maramag',  status: 'On Process',   initials: 'RG' },
+  { id: 6, name: 'Luis Bautista',      municipality: 'Kibawe',   status: 'On Process',   initials: 'LB' },
+];
+
+const hired = [];
+let currentTab = 'list';
+let pendingHire = null;
+let pendingReject = null;
+let undoTimer = null;
+let undoAction = null;
+
+// ── Render ──────────────────────────────────────────────────
+
+function renderList() {
+  const el = document.getElementById('row-list');
+  el.innerHTML = applicants.map((a, i) => `
+    <div class="row ${a.status === 'Rejected' ? 'rejected' : ''}" id="row-${a.id}">
+      <div class="checkbox"><input type="checkbox" /></div>
+      <div class="applicant-cell">
+        <div class="avatar">${a.initials}</div>
+        <span class="name">${a.name}</span>
+      </div>
+      <div class="municipality">${a.municipality}</div>
+      <div><span class="pill ${statusClass(a.status)}">${a.status}</span></div>
+      <div class="actions">
+        <button class="btn btn-hire" onclick="openHireDialog(${a.id})"
+          ${a.status === 'Rejected' ? 'disabled' : ''}>Hire</button>
+        <button class="btn btn-reject" onclick="openRejectDialog(${a.id})"
+          ${a.status === 'Rejected' ? 'disabled' : ''}>Reject</button>
+      </div>
+    </div>
+  `).join('');
+  updateBadges();
+}
+
+function renderHired() {
+  const el = document.getElementById('row-hired');
+  const empty = document.getElementById('empty-hired');
+  if (hired.length === 0) {
+    el.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  el.innerHTML = hired.map(a => `
+    <div class="row">
+      <div class="checkbox"><input type="checkbox" /></div>
+      <div class="applicant-cell">
+        <div class="avatar">${a.initials}</div>
+        <span class="name">${a.name}</span>
+      </div>
+      <div class="municipality">${a.municipality}</div>
+      <div class="municipality">${a.dateHired}</div>
+      <div class="municipality">${a.position}</div>
+    </div>
+  `).join('');
+  updateBadges();
+}
+
+function statusClass(s) {
+  if (s === 'Rejected') return 'rejected';
+  if (s === 'Recommended') return 'recommended';
+  if (s === 'Interview Set') return 'interview-set';
+  return 'on-process';
+}
+
+function updateBadges() {
+  const listBadge = document.getElementById('badge-list');
+  const hiredBadge = document.getElementById('badge-hired');
+  listBadge.textContent = applicants.length;
+  hiredBadge.textContent = hired.length;
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('tab-list').classList.toggle('active', tab === 'list');
+  document.getElementById('tab-hired').classList.toggle('active', tab === 'hired');
+  document.getElementById('view-list').style.display = tab === 'list' ? 'block' : 'none';
+  document.getElementById('view-hired').style.display = tab === 'hired' ? 'block' : 'none';
+  if (tab === 'hired') renderHired();
+}
+
+// ── Hire dialog ─────────────────────────────────────────────
+
+function openHireDialog(id) {
+  const a = applicants.find(x => x.id === id);
+  if (!a) return;
+  pendingHire = a;
+  document.getElementById('hire-dialog-title').textContent = `Hire ${a.name}`;
+  const preview = document.getElementById('hire-preview');
+  preview.querySelector('.avatar').textContent = a.initials;
+  preview.querySelector('span').textContent = a.name;
+  document.getElementById('hire-position').value = '';
+  document.getElementById('hire-date-btn').textContent = '📅 Pick date hired';
+  document.getElementById('hire-date-btn').classList.remove('has-date');
+  pendingHire.dateHired = null;
+  validateHire();
+  document.getElementById('hire-overlay').classList.add('open');
+}
+
+function closeHireDialog() {
+  document.getElementById('hire-overlay').classList.remove('open');
+  pendingHire = null;
+}
+
+function pickDate() {
+  const input = document.createElement('input');
+  input.type = 'date';
+  input.max = new Date().toISOString().split('T')[0];
+  input.min = '2005-01-01';
+  input.onchange = () => {
+    if (input.value) {
+      const d = new Date(input.value + 'T00:00:00');
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      pendingHire.dateHired = `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+      const btn = document.getElementById('hire-date-btn');
+      btn.textContent = `📅 ${pendingHire.dateHired}`;
+      btn.classList.add('has-date');
+      validateHire();
+    }
+  };
+  input.click();
+}
+
+function validateHire() {
+  const pos = document.getElementById('hire-position').value.trim();
+  const hasDate = pendingHire && pendingHire.dateHired;
+  document.getElementById('hire-confirm-btn').disabled = !(pos && hasDate);
+}
+
+function confirmHire() {
+  if (!pendingHire) return;
+  const position = document.getElementById('hire-position').value.trim();
+  const a = pendingHire;
+  a.position = position;
+  a.dateHired = a.dateHired || 'Today';
+
+  // Animate row exit
+  const rowEl = document.getElementById(`row-${a.id}`);
+  if (rowEl) {
+    rowEl.classList.add('exit');
+    setTimeout(() => {
+      const idx = applicants.findIndex(x => x.id === a.id);
+      if (idx !== -1) applicants.splice(idx, 1);
+      hired.push(a);
+      renderList();
+      // Pulse hired badge
+      const badge = document.getElementById('badge-hired');
+      badge.classList.remove('pulse');
+      void badge.offsetWidth;
+      badge.classList.add('pulse');
+    }, 350);
+  }
+
+  closeHireDialog();
+  showUndo(`${a.name} hired as ${position}`, () => {
+    const hi = hired.findIndex(x => x.id === a.id);
+    if (hi !== -1) hired.splice(hi, 1);
+    delete a.position;
+    delete a.dateHired;
+    applicants.push(a);
+    renderList();
+  });
+}
+
+// ── Reject dialog ───────────────────────────────────────────
+
+function openRejectDialog(id) {
+  const a = applicants.find(x => x.id === id);
+  if (!a) return;
+  pendingReject = a;
+  const preview = document.getElementById('reject-preview');
+  preview.querySelector('.avatar').textContent = a.initials;
+  preview.querySelector('span').textContent = a.name;
+  document.getElementById('reject-overlay').classList.add('open');
+}
+
+function closeRejectDialog() {
+  document.getElementById('reject-overlay').classList.remove('open');
+  pendingReject = null;
+}
+
+function confirmReject() {
+  if (!pendingReject) return;
+  const a = pendingReject;
+  const prevStatus = a.status;
+  a.status = 'Rejected';
+
+  // Flash row
+  const rowEl = document.getElementById(`row-${a.id}`);
+  if (rowEl) {
+    rowEl.classList.add('flash-red');
+    setTimeout(() => rowEl.classList.remove('flash-red'), 300);
+  }
+  renderList();
+
+  closeRejectDialog();
+  showUndo(`${a.name} rejected`, () => {
+    a.status = prevStatus;
+    renderList();
+  });
+}
+
+// ── Undo ────────────────────────────────────────────────────
+
+function showUndo(message, action) {
+  clearTimeout(undoTimer);
+  undoAction = action;
+  document.getElementById('undo-message').textContent = message;
+  const banner = document.getElementById('undo-banner');
+  banner.classList.add('show');
+  undoTimer = setTimeout(() => {
+    banner.classList.remove('show');
+    undoAction = null;
+  }, 8000);
+}
+
+function doUndo() {
+  if (undoAction) undoAction();
+  clearTimeout(undoTimer);
+  document.getElementById('undo-banner').classList.remove('show');
+  undoAction = null;
+}
+
+// ── Init ────────────────────────────────────────────────────
+renderList();
+</script>
+</body>
+</html>

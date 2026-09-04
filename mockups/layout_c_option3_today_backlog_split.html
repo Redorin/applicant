@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Layout C — Option 3: Today + Backlog Split</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #F0F2F8; color: #111827; }
+    .wrap { max-width: 1280px; margin: 0 auto; padding: 24px 32px; }
+    .badge { display: inline-block; background: #7E22CE; color: #fff; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; margin-bottom: 12px; letter-spacing: .5px; }
+    h1 { font-size: 22px; font-weight: 700; }
+    .sub { font-size: 14px; color: #8B92A5; margin-top: 2px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .period { display: inline-flex; gap: 2px; background: #F8F9FC; border: 1px solid #E4E7EF; border-radius: 10px; padding: 3px; }
+    .period span { padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; color: #8B92A5; cursor: pointer; }
+    .period span.active { background: #5B6ABF; color: #fff; }
+    .card { background: #fff; border: 1px solid #E4E7EF; border-radius: 10px; padding: 14px; box-shadow: 0 2px 8px rgba(17,24,39,.06); }
+    .card-title { font-size: 13px; font-weight: 700; color: #8B92A5; letter-spacing: .44px; text-transform: uppercase; }
+    .card-sub { font-size: 14px; color: #8B92A5; }
+    .card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid #E4E7EF; }
+    .link { font-size: 13px; color: #5B6ABF; font-weight: 600; cursor: pointer; }
+    /* Stat pills */
+    .pills { display: flex; gap: 12px; margin-bottom: 16px; }
+    .pill { flex: 1; background: #fff; border: 1px solid #E4E7EF; border-radius: 10px; padding: 14px; box-shadow: 0 2px 8px rgba(17,24,39,.06); display: flex; align-items: center; gap: 12px; }
+    .pill-icon { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+    .pill-num { font-size: 26px; font-weight: 700; font-feature-settings: 'tnum'; }
+    .pill-label { font-size: 11px; color: #8B92A5; }
+    /* Main split */
+    .row-main { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    /* Today's overview */
+    .today-stat { display: flex; align-items: center; gap: 10px; padding: 10px 0; }
+    .today-stat + .today-stat { border-top: 1px solid #F0F2F8; }
+    .today-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+    .today-label { flex: 1; font-size: 13px; color: #495057; }
+    .today-val { font-size: 18px; font-weight: 700; }
+    .today-badge { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px; margin-left: 6px; }
+    /* Speed metric inline */
+    .speed-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; padding: 10px; background: #F8F9FC; border-radius: 8px; }
+    .speed-circle { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; border: 3px solid; flex-shrink: 0; }
+    .speed-label { font-size: 12px; font-weight: 600; }
+    .speed-desc { font-size: 10px; color: #8B92A5; }
+    .speed-trend { font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px; margin-left: auto; }
+    /* Backlog alerts */
+    .alert-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+    .alert-item + .alert-item { border-top: 1px solid #F0F2F8; }
+    .alert-icon { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+    .alert-info { flex: 1; }
+    .alert-title { font-size: 12px; font-weight: 600; }
+    .alert-desc { font-size: 10px; color: #8B92A5; }
+    .alert-action { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 5px; cursor: pointer; flex-shrink: 0; }
+    /* Capacity mini */
+    .cap-mini { display: flex; align-items: center; gap: 8px; margin-top: 10px; padding: 8px 10px; background: #F8F9FC; border-radius: 6px; }
+    .cap-bar { flex: 1; height: 6px; background: #E4E7EF; border-radius: 3px; overflow: hidden; }
+    .cap-fill { height: 100%; border-radius: 3px; }
+    .cap-text { font-size: 11px; font-weight: 600; }
+    /* Row 2: 3-col */
+    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    /* Donut */
+    .donut-wrap { display: flex; align-items: center; gap: 16px; }
+    .donut-svg { width: 110px; height: 110px; flex-shrink: 0; }
+    .legend-row { display: flex; align-items: center; gap: 5px; padding: 2px 0; }
+    .legend-dot { width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0; }
+    .legend-name { flex: 1; font-size: 10px; color: #495057; }
+    .legend-count { font-size: 10px; font-weight: 600; }
+    /* Bar */
+    .bar-chart { display: flex; align-items: flex-end; gap: 4px; height: 100px; }
+    .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .bar-val { font-size: 8px; font-weight: 600; color: #8B92A5; }
+    .bar { width: 100%; background: linear-gradient(to bottom,#4A59AE,#5B6ABF); border-radius: 2px 2px 0 0; min-height: 2px; }
+    .bar-lbl { font-size: 8px; color: #8B92A5; }
+    /* Activity */
+    .act-item { display: flex; align-items: center; gap: 7px; padding: 5px 0; }
+    .act-item + .act-item { border-top: 1px solid #F0F2F8; }
+    .act-av { width: 24px; height: 24px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 700; color: #fff; flex-shrink: 0; }
+    .act-text { flex: 1; font-size: 11px; color: #495057; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .act-time { font-size: 9px; color: #8B92A5; flex-shrink: 0; }
+    /* Muni */
+    .muni-item { display: flex; align-items: center; gap: 7px; padding: 4px 0; }
+    .muni-rank { width: 18px; height: 18px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; }
+    .muni-name { flex: 1; font-size: 11px; font-weight: 500; }
+    .muni-bar { width: 60px; height: 3px; background: #F0F2F8; border-radius: 2px; overflow: hidden; }
+    .muni-fill { height: 100%; background: #5B6ABF; border-radius: 2px; }
+    .muni-cnt { font-size: 11px; font-weight: 600; width: 28px; text-align: right; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="badge">OPTION 3 — TODAY + BACKLOG SPLIT</div>
+  <div class="topbar">
+    <div><h1>Dashboard</h1><p class="sub">What's happening today and what needs attention</p></div>
+    <div class="period"><span>This month</span><span class="active">This year</span><span>All time</span></div>
+  </div>
+
+  <!-- Stat pills -->
+  <div class="pills">
+    <div class="pill">
+      <div class="pill-icon" style="background:#EEF2FF;color:#5B6ABF">📋</div>
+      <div><div class="pill-num">35,339</div><div class="pill-label">Total on file</div></div>
+    </div>
+    <div class="pill">
+      <div class="pill-icon" style="background:#DCFCE7;color:#166534">➕</div>
+      <div><div class="pill-num">23</div><div class="pill-label">New today</div></div>
+    </div>
+    <div class="pill">
+      <div class="pill-icon" style="background:#FEF3C7;color:#92400E">⏳</div>
+      <div><div class="pill-num">147</div><div class="pill-label">Pending review</div></div>
+    </div>
+    <div class="pill">
+      <div class="pill-icon" style="background:#FEE2E2;color:#991B1B">🚨</div>
+      <div><div class="pill-num">12</div><div class="pill-label">Overdue (>7 days)</div></div>
+    </div>
+  </div>
+
+  <!-- Main row: Left = Today, Right = Backlog alerts -->
+  <div class="row-main">
+    <!-- Left: Today's overview + processing speed -->
+    <div class="card">
+      <div class="card-head">
+        <div><div class="card-title">Today's Overview</div><div class="card-sub">Thursday, Aug 13, 2026</div></div>
+      </div>
+      <div class="today-stat">
+        <div class="today-dot" style="background:#5B6ABF"></div>
+        <span class="today-label">New applications received</span>
+        <span class="today-val">23</span>
+        <span class="today-badge" style="background:#DCFCE7;color:#166534">+8 vs avg</span>
+      </div>
+      <div class="today-stat">
+        <div class="today-dot" style="background:#166534"></div>
+        <span class="today-label">Applications reviewed</span>
+        <span class="today-val">15</span>
+      </div>
+      <div class="today-stat">
+        <div class="today-dot" style="background:#92400E"></div>
+        <span class="today-label">Interviews scheduled</span>
+        <span class="today-val">4</span>
+        <span class="today-badge" style="background:#FEF3C7;color:#92400E">2 today</span>
+      </div>
+      <div class="today-stat">
+        <div class="today-dot" style="background:#7E22CE"></div>
+        <span class="today-label">Actions needed</span>
+        <span class="today-val">7</span>
+        <span class="today-badge" style="background:#FEE2E2;color:#991B1B">3 urgent</span>
+      </div>
+      <div class="speed-row">
+        <div class="speed-circle" style="border-color:#166534;color:#166534">4.2</div>
+        <div>
+          <div class="speed-label">Avg days to review</div>
+          <div class="speed-desc">-0.8 vs last month</div>
+        </div>
+        <div class="speed-trend" style="background:#DCFCE7;color:#166534">improving</div>
+      </div>
+      <div class="cap-mini">
+        <span class="cap-text" style="color:#8B92A5">Capacity</span>
+        <div class="cap-bar"><div class="cap-fill" style="width:84%;background:linear-gradient(90deg,#166534,#40C463)"></div></div>
+        <span class="cap-text" style="color:#166534">84%</span>
+      </div>
+    </div>
+
+    <!-- Right: Backlog alerts -->
+    <div class="card">
+      <div class="card-head">
+        <div><div class="card-title">Backlog Alerts</div><div class="card-sub">Items requiring immediate attention</div></div>
+        <span class="link">View all</span>
+      </div>
+      <div class="alert-item">
+        <div class="alert-icon" style="background:#FEE2E2;color:#991B1B">🔴</div>
+        <div class="alert-info">
+          <div class="alert-title">12 overdue applications</div>
+          <div class="alert-desc">Not reviewed in 7+ days</div>
+        </div>
+        <div class="alert-action" style="background:#FEE2E2;color:#991B1B">Review</div>
+      </div>
+      <div class="alert-item">
+        <div class="alert-icon" style="background:#FEF3C7;color:#92400E">⏳</div>
+        <div class="alert-info">
+          <div class="alert-title">47 awaiting interview</div>
+          <div class="alert-desc">Interview not yet scheduled</div>
+        </div>
+        <div class="alert-action" style="background:#FEF3C7;color:#92400E">Schedule</div>
+      </div>
+      <div class="alert-item">
+        <div class="alert-icon" style="background:#EEF2FF;color:#5B6ABF">📄</div>
+        <div class="alert-info">
+          <div class="alert-title">89 incomplete documents</div>
+          <div class="alert-desc">Missing required attachments</div>
+        </div>
+        <div class="alert-action" style="background:#EEF2FF;color:#5B6ABF">Follow up</div>
+      </div>
+      <div class="alert-item">
+        <div class="alert-icon" style="background:#DCFCE7;color:#166534">✅</div>
+        <div class="alert-info">
+          <div class="alert-title">23 ready for recommendation</div>
+          <div class="alert-desc">All criteria met, awaiting approval</div>
+        </div>
+        <div class="alert-action" style="background:#DCFCE7;color:#166534">Approve</div>
+      </div>
+      <div style="margin-top:12px;padding:10px;background:#F0F2F8;border-radius:8px">
+        <div style="font-size:11px;font-weight:600;color:#495057;margin-bottom:6px">Oldest pending applicant</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:30px;height:30px;border-radius:6px;background:#5B6ABF;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700">JD</div>
+          <div style="flex:1">
+            <div style="font-size:12px;font-weight:600">Juan Dela Cruz</div>
+            <div style="font-size:10px;color:#8B92A5">Admin Aide — Lingayen</div>
+          </div>
+          <div style="font-size:12px;font-weight:700;color:#991B1B">43 days</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 2: 3-col — Donut + Bar + Activity -->
+  <div class="row3">
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Status Distribution</div></div></div>
+      <div class="donut-wrap">
+        <svg class="donut-svg" viewBox="0 0 110 110">
+          <circle cx="55" cy="55" r="40" fill="none" stroke="#166534" stroke-width="15" stroke-dasharray="92 159" stroke-dashoffset="0" transform="rotate(-90 55 55)"/>
+          <circle cx="55" cy="55" r="40" fill="none" stroke="#5B6ABF" stroke-width="15" stroke-dasharray="64 187" stroke-dashoffset="-92" transform="rotate(-90 55 55)"/>
+          <circle cx="55" cy="55" r="40" fill="none" stroke="#92400E" stroke-width="15" stroke-dasharray="20 231" stroke-dashoffset="-156" transform="rotate(-90 55 55)"/>
+          <circle cx="55" cy="55" r="40" fill="none" stroke="#7E22CE" stroke-width="15" stroke-dasharray="12 239" stroke-dashoffset="-176" transform="rotate(-90 55 55)"/>
+          <text x="55" y="52" text-anchor="middle" font-size="15" font-weight="700" fill="#111827">35,339</text>
+          <text x="55" y="64" text-anchor="middle" font-size="8" fill="#8B92A5">Total</text>
+        </svg>
+        <div>
+          <div class="legend-row"><div class="legend-dot" style="background:#166534"></div><span class="legend-name">Active File</span><span class="legend-count">73%</span></div>
+          <div class="legend-row"><div class="legend-dot" style="background:#5B6ABF"></div><span class="legend-name">On Process</span><span class="legend-count">13%</span></div>
+          <div class="legend-row"><div class="legend-dot" style="background:#92400E"></div><span class="legend-name">(blank)</span><span class="legend-count">4%</span></div>
+          <div class="legend-row"><div class="legend-dot" style="background:#7E22CE"></div><span class="legend-name">Hired</span><span class="legend-count">2%</span></div>
+          <div class="legend-row"><div class="legend-dot" style="background:#8B92A5"></div><span class="legend-name">Other</span><span class="legend-count">8%</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Monthly Applications</div></div></div>
+      <div class="bar-chart">
+        <div class="bar-col"><div class="bar-val">172</div><div class="bar" style="height:74%"></div><div class="bar-lbl">Sep</div></div>
+        <div class="bar-col"><div class="bar-val">146</div><div class="bar" style="height:63%"></div><div class="bar-lbl">Oct</div></div>
+        <div class="bar-col"><div class="bar-val">47</div><div class="bar" style="height:20%"></div><div class="bar-lbl">Nov</div></div>
+        <div class="bar-col"><div class="bar-val">43</div><div class="bar" style="height:18%"></div><div class="bar-lbl">Dec</div></div>
+        <div class="bar-col"><div class="bar-val">121</div><div class="bar" style="height:52%"></div><div class="bar-lbl">Jan</div></div>
+        <div class="bar-col"><div class="bar-val">232</div><div class="bar" style="height:100%"></div><div class="bar-lbl">Feb</div></div>
+        <div class="bar-col"><div class="bar-val">125</div><div class="bar" style="height:54%"></div><div class="bar-lbl">Mar</div></div>
+        <div class="bar-col"><div class="bar-val">53</div><div class="bar" style="height:23%"></div><div class="bar-lbl">Apr</div></div>
+        <div class="bar-col"><div class="bar-val">110</div><div class="bar" style="height:47%"></div><div class="bar-lbl">May</div></div>
+        <div class="bar-col"><div class="bar-val">30</div><div class="bar" style="height:13%"></div><div class="bar-lbl">Jun</div></div>
+        <div class="bar-col"><div class="bar-val">1</div><div class="bar" style="height:2px"></div><div class="bar-lbl">Jul</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Recent Activity</div></div><span class="link">View logs</span></div>
+      <div class="act-item"><div class="act-av" style="background:#5B6ABF">RE</div><div class="act-text">red signed in</div><div class="act-time">now</div></div>
+      <div class="act-item"><div class="act-av" style="background:#166534">KA</div><div class="act-text">Failed sign-in ("kath")</div><div class="act-time">2h</div></div>
+      <div class="act-item"><div class="act-av" style="background:#92400E">DE</div><div class="act-text">des signed out</div><div class="act-time">2h</div></div>
+      <div class="act-item"><div class="act-av" style="background:#7E22CE">HP</div><div class="act-text">hara added applicant</div><div class="act-time">3h</div></div>
+      <div class="act-item"><div class="act-av" style="background:#8B92A5">LY</div><div class="act-text">lyndon updated record</div><div class="act-time">4h</div></div>
+    </div>
+  </div>
+
+  <!-- Row 3: Municipalities full width -->
+  <div class="card">
+    <div class="card-head"><div><div class="card-title">Top Municipalities</div></div><span class="link">View all</span></div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+      <div class="muni-item"><div class="muni-rank" style="background:#FEF3C7;color:#92400E">1</div><span class="muni-name">Lingayen</span><div class="muni-bar"><div class="muni-fill" style="width:100%"></div></div><span class="muni-cnt">257</span></div>
+      <div class="muni-item"><div class="muni-rank" style="background:#EFF1F6;color:#5B6479">2</div><span class="muni-name">Binmaley</span><div class="muni-bar"><div class="muni-fill" style="width:28%"></div></div><span class="muni-cnt">73</span></div>
+      <div class="muni-item"><div class="muni-rank" style="background:#FED7AA;color:#9A3412">3</div><span class="muni-name">Bugallon</span><div class="muni-bar"><div class="muni-fill" style="width:19%"></div></div><span class="muni-cnt">48</span></div>
+      <div class="muni-item"><div class="muni-rank" style="background:#E0E7FF;color:#3730A3">4</div><span class="muni-name">Mangaldan</span><div class="muni-bar"><div class="muni-fill" style="width:14%"></div></div><span class="muni-cnt">36</span></div>
+      <div class="muni-item"><div class="muni-rank" style="background:#F0F2F8;color:#5B6479">5</div><span class="muni-name">Dagupan</span><div class="muni-bar"><div class="muni-fill" style="width:12%"></div></div><span class="muni-cnt">31</span></div>
+      <div class="muni-item"><div class="muni-rank" style="background:#F0F2F8;color:#5B6479">6</div><span class="muni-name">Calasiao</span><div class="muni-bar"><div class="muni-fill" style="width:10%"></div></div><span class="muni-cnt">26</span></div>
+      <div class="muni-item"><div class="muni-rank" style="background:#F0F2F8;color:#5B6479">7</div><span class="muni-name">Santa Barbara</span><div class="muni-bar"><div class="muni-fill" style="width:8%"></div></div><span class="muni-cnt">21</span></div>
+      <div class="muni-item"><div class="muni-rank" style="background:#F0F2F8;color:#5B6479">8</div><span class="muni-name">Urdaneta</span><div class="muni-bar"><div class="muni-fill" style="width:6%"></div></div><span class="muni-cnt">16</span></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Layouts — Choose One</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #F0F2F8; color: #111827; }
+    .wrap { max-width: 900px; margin: 0 auto; padding: 48px 32px; }
+    h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+    .sub { font-size: 15px; color: #8B92A5; margin-bottom: 32px; line-height: 1.6; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .card { background: #fff; border: 1px solid #E4E7EF; border-radius: 12px; overflow: hidden; transition: box-shadow .2s, transform .2s; cursor: pointer; text-decoration: none; color: inherit; display: block; }
+    .card:hover { box-shadow: 0 8px 24px rgba(17,24,39,.12); transform: translateY(-2px); }
+    .card-img { width: 100%; aspect-ratio: 16/10; object-fit: cover; border-bottom: 1px solid #E4E7EF; }
+    .card-body { padding: 20px; }
+    .card-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 4px; margin-bottom: 8px; letter-spacing: .5px; color: #fff; }
+    .card-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .card-desc { font-size: 13px; color: #8B92A5; line-height: 1.5; }
+    .card-features { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+    .card-features span { font-size: 11px; background: #F0F2F8; color: #5B6479; padding: 3px 8px; border-radius: 4px; }
+    .note { margin-top: 32px; padding: 16px; background: #fff; border: 1px solid #E4E7EF; border-radius: 10px; font-size: 13px; color: #8B92A5; line-height: 1.6; }
+    .note strong { color: #111827; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Dashboard Layouts</h1>
+  <p class="sub">Choose a layout for the dashboard. All use the same data — the difference is how it's organized and presented.</p>
+
+  <div class="grid">
+    <a class="card" href="layout_a_heatmap_hero.html">
+      <div class="card-body">
+        <div class="card-badge" style="background:#5B6ABF">LAYOUT A</div>
+        <div class="card-title">Heatmap Hero</div>
+        <div class="card-desc">GitHub-style contribution heatmap as the centerpiece. Stats on top, charts below. Clean and focused.</div>
+        <div class="card-features">
+          <span>GitHub heatmap</span>
+          <span>Full-width hero</span>
+          <span>4 KPI cards</span>
+          <span>Donut + Bar</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card" href="layout_b_executive.html">
+      <div class="card-body">
+        <div class="card-badge" style="background:#166534">LAYOUT B</div>
+        <div class="card-title">Executive Summary</div>
+        <div class="card-desc">Narrative summary banner at top. 3-column grid below. Designed for quick overview at a glance.</div>
+        <div class="card-features">
+          <span>Summary banner</span>
+          <span>3-col grid</span>
+          <span>Status bars</span>
+          <span>Compact cards</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card" href="layout_c_analytics_dense.html">
+      <div class="card-body">
+        <div class="card-badge" style="background:#7E22CE">LAYOUT C</div>
+        <div class="card-title">Analytics Dense</div>
+        <div class="card-desc">Maximum data density. Compact pills, 3-column grid, mini charts. For power users who want everything visible.</div>
+        <div class="card-features">
+          <span>Dense 3-col</span>
+          <span>Compact pills</span>
+          <span>Mini everything</span>
+          <span>Full heatmap</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card" href="layout_d_pipeline.html">
+      <div class="card-body">
+        <div class="card-badge" style="background:#92400E">LAYOUT D</div>
+        <div class="card-title">Pipeline Flow</div>
+        <div class="card-desc">Application pipeline stages as the hero. Flow visualization shows progression from file to hire.</div>
+        <div class="card-features">
+          <span>Pipeline stages</span>
+          <span>Flow arrows</span>
+          <span>Status focused</span>
+          <span>Donut + Heatmap</span>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <div class="note">
+    <strong>Tip:</strong> Click any card to open the full interactive mockup. Each layout uses the same underlying data — the difference is visual hierarchy and information density. Tell me which one you prefer and I'll implement it in Flutter.
+  </div>
+</div>
+</body>
+</html>

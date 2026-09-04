@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Redesign v3</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #F0F2F8; color: #111827; }
+
+    .shell { display: flex; height: 100vh; }
+
+    /* Sidebar rail */
+    .rail { width: 56px; background: linear-gradient(180deg, #2D325A 0%, #1E2240 100%); display: flex; flex-direction: column; align-items: center; padding: 12px 0; gap: 4px; }
+    .rail-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #C5C9E0; cursor: pointer; font-size: 18px; }
+    .rail-icon:hover { background: rgba(255,255,255,0.08); }
+    .rail-icon.active { background: rgba(91,106,191,0.25); color: #fff; }
+    .rail-spacer { flex: 1; }
+
+    /* Main area */
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* Top bar */
+    .topbar { height: 48px; background: #fff; border-bottom: 1px solid #E4E7EF; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; }
+    .topbar-title { font-size: 15px; font-weight: 600; color: #111827; }
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
+    .topbar-time { font-size: 13px; color: #8B92A5; }
+    .topbar-avatar { width: 32px; height: 32px; border-radius: 50%; background: #5B6ABF; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+
+    /* Content */
+    .content { flex: 1; padding: 24px; overflow-y: auto; }
+
+    /* Welcome banner */
+    .welcome-banner { background: linear-gradient(135deg, #2D325A 0%, #4A59AE 100%); border-radius: 16px; padding: 28px 32px; margin-bottom: 24px; color: #fff; position: relative; overflow: hidden; }
+    .welcome-banner::after { content: ''; position: absolute; top: -50%; right: -10%; width: 300px; height: 300px; background: rgba(255,255,255,0.05); border-radius: 50%; }
+    .welcome-greeting { font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 4px; }
+    .welcome-name { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+    .welcome-summary { font-size: 14px; color: rgba(255,255,255,0.8); }
+    .welcome-stats { display: flex; gap: 32px; margin-top: 20px; }
+    .welcome-stat { text-align: center; }
+    .welcome-stat-value { font-size: 28px; font-weight: 700; }
+    .welcome-stat-label { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+
+    /* Quick actions */
+    .quick-actions { display: flex; gap: 12px; margin-bottom: 24px; }
+    .quick-action { display: flex; align-items: center; gap: 8px; padding: 10px 16px; background: #fff; border: 1px solid #E4E7EF; border-radius: 8px; cursor: pointer; transition: all 0.15s; font-size: 13px; font-weight: 500; color: #5B6479; }
+    .quick-action:hover { border-color: #5B6ABF; color: #5B6ABF; background: #F8F9FC; }
+    .quick-action-icon { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+    .quick-action-icon.blue { background: #E0E7FF; }
+    .quick-action-icon.green { background: #DCFCE7; }
+    .quick-action-icon.orange { background: #FEF3C7; }
+
+    /* Period picker */
+    .period-picker { display: flex; gap: 0; background: rgba(255,255,255,0.15); border-radius: 8px; padding: 3px; }
+    .period-btn { padding: 6px 12px; font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.6); border: none; background: transparent; border-radius: 6px; cursor: pointer; transition: all 0.15s; }
+    .period-btn:hover { color: #fff; }
+    .period-btn.active { background: rgba(255,255,255,0.2); color: #fff; font-weight: 600; }
+
+    /* KPI section header */
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .section-title { font-size: 15px; font-weight: 700; color: #111827; }
+
+    /* KPI grid */
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+
+    /* KPI card - minimal */
+    .kpi-card { background: #fff; border: 1px solid #E4E7EF; border-radius: 12px; padding: 20px; cursor: pointer; transition: all 0.2s; }
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(20,30,60,0.1); }
+    .kpi-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .kpi-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .kpi-icon.blue { background: #E0E7FF; color: #4338CA; }
+    .kpi-icon.green { background: #DCFCE7; color: #166534; }
+    .kpi-icon.orange { background: #FEF3C7; color: #92400E; }
+    .kpi-icon.purple { background: #F3E8FF; color: #7E22CE; }
+    .kpi-change { font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 2px; }
+    .kpi-change.up { color: #166534; }
+    .kpi-change.down { color: #991B1B; }
+    .kpi-value { font-size: 32px; font-weight: 700; color: #111827; font-feature-settings: 'tnum'; line-height: 1; margin-bottom: 4px; }
+    .kpi-label { font-size: 13px; color: #8B92A5; }
+
+    /* Charts grid */
+    .charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 24px; }
+
+    /* Card */
+    .card { background: #fff; border: 1px solid #E4E7EF; border-radius: 12px; padding: 20px; }
+    .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .card-title { font-size: 14px; font-weight: 700; color: #111827; }
+    .card-subtitle { font-size: 12px; color: #8B92A5; margin-top: 2px; }
+    .card-link { font-size: 12px; font-weight: 500; color: #5B6ABF; cursor: pointer; text-decoration: none; }
+    .card-link:hover { text-decoration: underline; }
+
+    /* Bar chart */
+    .bar-chart { display: flex; align-items: flex-end; gap: 6px; height: 200px; }
+    .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .bar-value { font-size: 11px; font-weight: 600; color: #5B6479; font-feature-settings: 'tnum'; opacity: 0; transition: opacity 0.15s; }
+    .bar-col:hover .bar-value { opacity: 1; }
+    .bar { width: 100%; background: linear-gradient(180deg, #4A59AE 0%, #5B6ABF 100%); border-radius: 6px 6px 0 0; transition: all 0.2s; min-height: 4px; }
+    .bar:hover { background: linear-gradient(180deg, #3D4A9A 0%, #4A59AE 100%); transform: scaleY(1.02); transform-origin: bottom; }
+    .bar-label { font-size: 11px; color: #8B92A5; margin-top: 6px; }
+
+    /* Donut chart */
+    .donut-container { display: flex; align-items: center; gap: 24px; }
+    .donut { position: relative; width: 160px; height: 160px; }
+    .donut-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+    .donut-center-value { font-size: 24px; font-weight: 700; color: #111827; }
+    .donut-center-label { font-size: 12px; color: #8B92A5; }
+    .donut-legend { flex: 1; }
+    .legend-item { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid #F0F2F8; }
+    .legend-item:last-child { border-bottom: none; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+    .legend-label { flex: 1; font-size: 13px; color: #5B6479; }
+    .legend-value { font-size: 13px; font-weight: 600; color: #111827; font-feature-settings: 'tnum'; }
+    .legend-pct { font-size: 12px; color: #8B92A5; width: 40px; text-align: right; }
+
+    /* Bottom grid */
+    .bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    /* Horizontal bars */
+    .hbar-list { display: flex; flex-direction: column; gap: 4px; }
+    .hbar-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; cursor: pointer; transition: background 0.1s; }
+    .hbar-row:hover { background: #F8F9FC; }
+    .hbar-rank { width: 20px; font-size: 12px; font-weight: 700; color: #C7CDF0; text-align: center; }
+    .hbar-label { width: 100px; font-size: 13px; font-weight: 500; color: #5B6479; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .hbar-track { flex: 1; height: 8px; background: #F0F2F8; border-radius: 4px; overflow: hidden; }
+    .hbar-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
+    .hbar-fill.blue { background: linear-gradient(90deg, #5B6ABF, #7C8AE6); }
+    .hbar-count { width: 45px; text-align: right; font-size: 13px; font-weight: 700; color: #111827; font-feature-settings: 'tnum'; }
+
+    /* Recent activity */
+    .activity-list { display: flex; flex-direction: column; gap: 12px; }
+    .activity-item { display: flex; gap: 12px; padding: 12px; border-radius: 8px; background: #F8F9FC; }
+    .activity-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+    .activity-icon.login { background: #DCFCE7; }
+    .activity-icon.add { background: #E0E7FF; }
+    .activity-icon.edit { background: #FEF3C7; }
+    .activity-icon.hire { background: #F3E8FF; }
+    .activity-content { flex: 1; min-width: 0; }
+    .activity-text { font-size: 13px; color: #111827; line-height: 1.4; }
+    .activity-text strong { font-weight: 600; }
+    .activity-time { font-size: 11px; color: #8B92A5; margin-top: 2px; }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <!-- Sidebar Rail -->
+    <div class="rail">
+      <div class="rail-icon active">📊</div>
+      <div class="rail-icon">👥</div>
+      <div class="rail-icon">📋</div>
+      <div class="rail-icon">📁</div>
+      <div class="rail-icon">📈</div>
+      <div class="rail-spacer"></div>
+      <div class="rail-icon">⚙️</div>
+    </div>
+
+    <!-- Main Area -->
+    <div class="main">
+      <!-- Top Bar -->
+      <div class="topbar">
+        <span class="topbar-title">HRMDO Applicant System</span>
+        <div class="topbar-right">
+          <span class="topbar-time">Thursday, Aug 13, 2026</span>
+          <div class="topbar-avatar">RG</div>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div class="content">
+        <!-- Welcome Banner -->
+        <div class="welcome-banner">
+          <div class="welcome-greeting">Good morning,</div>
+          <div class="welcome-name">Reddrick</div>
+          <div class="welcome-summary">Here's what's happening with your applicant management today.</div>
+          <div class="welcome-stats">
+            <div class="welcome-stat">
+              <div class="welcome-stat-value">1,247</div>
+              <div class="welcome-stat-label">Total Applicants</div>
+            </div>
+            <div class="welcome-stat">
+              <div class="welcome-stat-value">342</div>
+              <div class="welcome-stat-label">This Year</div>
+            </div>
+            <div class="welcome-stat">
+              <div class="welcome-stat-value">28</div>
+              <div class="welcome-stat-label">Hired</div>
+            </div>
+            <div class="welcome-stat">
+              <div class="welcome-stat-value">156</div>
+              <div class="welcome-stat-label">On Process</div>
+            </div>
+          </div>
+          <div class="period-picker" style="position: absolute; top: 28px; right: 32px;">
+            <button class="period-btn">Month</button>
+            <button class="period-btn active">Year</button>
+            <button class="period-btn">All</button>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+          <div class="quick-action">
+            <div class="quick-action-icon blue">➕</div>
+            Add Applicant
+          </div>
+          <div class="quick-action">
+            <div class="quick-action-icon green">📋</div>
+            View Applications
+          </div>
+          <div class="quick-action">
+            <div class="quick-action-icon orange">📈</div>
+            Generate Report
+          </div>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="section-header">
+          <span class="section-title">Overview</span>
+        </div>
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <div class="kpi-icon blue">👥</div>
+              <div class="kpi-change up">+12.5%</div>
+            </div>
+            <div class="kpi-value">1,247</div>
+            <div class="kpi-label">Applicants on file</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <div class="kpi-icon green">📋</div>
+              <div class="kpi-change up">+8.2%</div>
+            </div>
+            <div class="kpi-value">342</div>
+            <div class="kpi-label">Applications this year</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <div class="kpi-icon orange">✅</div>
+              <div class="kpi-change up">+24.1%</div>
+            </div>
+            <div class="kpi-value">28</div>
+            <div class="kpi-label">Hired this year</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <div class="kpi-icon purple">⏳</div>
+              <div class="kpi-change down">-5.3%</div>
+            </div>
+            <div class="kpi-value">156</div>
+            <div class="kpi-label">On process</div>
+          </div>
+        </div>
+
+        <!-- Main Charts -->
+        <div class="charts-grid">
+          <!-- Bar chart -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Applications received</div>
+                <div class="card-subtitle">Last 12 months</div>
+              </div>
+              <a class="card-link">View report →</a>
+            </div>
+            <div class="bar-chart">
+              <div class="bar-col">
+                <div class="bar-value">18</div>
+                <div class="bar" style="height: 36%"></div>
+                <div class="bar-label">Jan</div>
+              </div>
+              <div class="bar-col">
+                <div class="bar-value">24</div>
+                <div class="bar" style="height: 48%"></div>
+                <div class="bar-label">Feb</div>
+              </div>
+              <div class="bar-col">
+                <div class="bar-value">15</div>
+                <div class="bar" style="height: 30%"></div>
+                <div class="bar-label">Mar</div>
+              </div>
+              <div class="bar-col">
+                <div class="bar-value">32</div>
+                <div class="bar" style="height: 64%"></div>
+                <div class="bar-label">Apr</div>
+              </div>
+              <div class="bar-col">
+                <div class="bar-value">28</div>
+                <div class="bar" style="height: 56%"></div>
+                <div class="bar-label">May</div>
+              </div>
+              <div class="bar-col">
+                <div class="bar-value">38</div>
+                <div class="bar" style="height: 76%"></div>
+                <div class="bar-label">Jun</div>
+              </div>
+              <div class="bar-col">
+                <div class="bar-value">35</div>
+                <div class="bar" style="height: 70%"></div>
+                <div class="bar-label">Jul</div>
+              </div>
+              <div class="bar-col">
+                <div class="bar-value">42</div>
+                <div class="bar" style="height: 84%"></div>
+                <div class="bar-label">Aug</div>
+              </div>
+              <div class="bar-col">
+                <div class="bar-value">30</div>
+                <div class="bar" style="height: 60%"></div>
+                <div class="bar-label">Sep</div>
+              </div>
+              <div class="bar-col">
+                <div class="bar-value">45</div>
+                <div class="bar" style="height: 90%"></div>
+                <div class="bar-label">Oct</div>
+              </div>
+              <div class="bar-col">
+                <div class="bar-value">40</div>
+                <div class="bar" style="height: 80%"></div>
+                <div class="bar-label">Nov</div>
+              </div>
+              <div class="bar-col">
+                <div class="bar-value">50</div>
+                <div class="bar" style="height: 100%"></div>
+                <div class="bar-label">Dec</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Donut chart - Status breakdown -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Status breakdown</div>
+                <div class="card-subtitle">All time</div>
+              </div>
+            </div>
+            <div class="donut-container">
+              <div class="donut">
+                <svg viewBox="0 0 160 160">
+                  <!-- On Process - 35% -->
+                  <circle cx="80" cy="80" r="60" fill="none" stroke="#22C55E" stroke-width="24" stroke-dasharray="132 245" stroke-dashoffset="0" transform="rotate(-90 80 80)"/>
+                  <!-- For Interview - 25% -->
+                  <circle cx="80" cy="80" r="60" fill="none" stroke="#5B6ABF" stroke-width="24" stroke-dasharray="94 283" stroke-dashoffset="-132" transform="rotate(-90 80 80)"/>
+                  <!-- Recommended - 18% -->
+                  <circle cx="80" cy="80" r="60" fill="none" stroke="#F59E0B" stroke-width="24" stroke-dasharray="68 309" stroke-dashoffset="-226" transform="rotate(-90 80 80)"/>
+                  <!-- Hired - 12% -->
+                  <circle cx="80" cy="80" r="60" fill="none" stroke="#166534" stroke-width="24" stroke-dasharray="45 332" stroke-dashoffset="-294" transform="rotate(-90 80 80)"/>
+                  <!-- Other - 10% -->
+                  <circle cx="80" cy="80" r="60" fill="none" stroke="#9CA3AF" stroke-width="24" stroke-dasharray="38 339" stroke-dashoffset="-339" transform="rotate(-90 80 80)"/>
+                </svg>
+                <div class="donut-center">
+                  <div class="donut-center-value">410</div>
+                  <div class="donut-center-label">Total</div>
+                </div>
+              </div>
+              <div class="donut-legend">
+                <div class="legend-item">
+                  <div class="legend-dot" style="background: #22C55E;"></div>
+                  <span class="legend-label">On Process</span>
+                  <span class="legend-value">156</span>
+                  <span class="legend-pct">35%</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-dot" style="background: #5B6ABF;"></div>
+                  <span class="legend-label">For Interview</span>
+                  <span class="legend-value">112</span>
+                  <span class="legend-pct">25%</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-dot" style="background: #F59E0B;"></div>
+                  <span class="legend-label">Recommended</span>
+                  <span class="legend-value">70</span>
+                  <span class="legend-pct">18%</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-dot" style="background: #166534;"></div>
+                  <span class="legend-label">Hired</span>
+                  <span class="legend-value">44</span>
+                  <span class="legend-pct">12%</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-dot" style="background: #9CA3AF;"></div>
+                  <span class="legend-label">Other</span>
+                  <span class="legend-value">28</span>
+                  <span class="legend-pct">10%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Grid -->
+        <div class="bottom-grid">
+          <!-- Top municipalities -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Top municipalities</div>
+                <div class="card-subtitle">This year</div>
+              </div>
+              <a class="card-link">View all →</a>
+            </div>
+            <div class="hbar-list">
+              <div class="hbar-row">
+                <span class="hbar-rank">1</span>
+                <span class="hbar-label">Calasiao</span>
+                <div class="hbar-track"><div class="hbar-fill blue" style="width: 100%"></div></div>
+                <span class="hbar-count">89</span>
+              </div>
+              <div class="hbar-row">
+                <span class="hbar-rank">2</span>
+                <span class="hbar-label">Dagupan City</span>
+                <div class="hbar-track"><div class="hbar-fill blue" style="width: 78%"></div></div>
+                <span class="hbar-count">69</span>
+              </div>
+              <div class="hbar-row">
+                <span class="hbar-rank">3</span>
+                <span class="hbar-label">Mangaldan</span>
+                <div class="hbar-track"><div class="hbar-fill blue" style="width: 62%"></div></div>
+                <span class="hbar-count">55</span>
+              </div>
+              <div class="hbar-row">
+                <span class="hbar-rank">4</span>
+                <span class="hbar-label">Binmaley</span>
+                <div class="hbar-track"><div class="hbar-fill blue" style="width: 48%"></div></div>
+                <span class="hbar-count">43</span>
+              </div>
+              <div class="hbar-row">
+                <span class="hbar-rank">5</span>
+                <span class="hbar-label">Lingayen</span>
+                <div class="hbar-track"><div class="hbar-fill blue" style="width: 35%"></div></div>
+                <span class="hbar-count">31</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent activity -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Recent activity</div>
+                <div class="card-subtitle">Latest actions</div>
+              </div>
+              <a class="card-link">View logs →</a>
+            </div>
+            <div class="activity-list">
+              <div class="activity-item">
+                <div class="activity-icon login">🔑</div>
+                <div class="activity-content">
+                  <div class="activity-text"><strong>Reddrick Gonzales</strong> signed in</div>
+                  <div class="activity-time">2 minutes ago</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon add">➕</div>
+                <div class="activity-content">
+                  <div class="activity-text"><strong>Des Samson</strong> added applicant Juan Dela Cruz</div>
+                  <div class="activity-time">15 minutes ago</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon edit">✏️</div>
+                <div class="activity-content">
+                  <div class="activity-text"><strong>Kath Torres</strong> updated status for Maria Santos</div>
+                  <div class="activity-time">1 hour ago</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon hire">✅</div>
+                <div class="activity-content">
+                  <div class="activity-text"><strong>Hara Pascua</strong> hired Jose Reyes</div>
+                  <div class="activity-time">2 hours ago</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

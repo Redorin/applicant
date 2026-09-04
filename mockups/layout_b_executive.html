@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Layout B — Executive Summary</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #F0F2F8; color: #111827; }
+    .wrap { max-width: 1280px; margin: 0 auto; padding: 24px 32px; }
+    .badge { display: inline-block; background: #166534; color: #fff; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; margin-bottom: 12px; letter-spacing: .5px; }
+    h1 { font-size: 22px; font-weight: 700; }
+    .sub { font-size: 14px; color: #8B92A5; margin-top: 2px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .period { display: inline-flex; gap: 2px; background: #F8F9FC; border: 1px solid #E4E7EF; border-radius: 10px; padding: 3px; }
+    .period span { padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; color: #8B92A5; cursor: pointer; }
+    .period span.active { background: #5B6ABF; color: #fff; }
+    /* Summary banner */
+    .summary { background: #fff; border: 1px solid #E4E7EF; border-radius: 10px; padding: 20px 24px; margin-bottom: 16px; display: flex; gap: 32px; align-items: center; box-shadow: 0 2px 8px rgba(17,24,39,.06); }
+    .summary-main { flex: 1; }
+    .summary-main h2 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .summary-main p { font-size: 13px; color: #8B92A5; line-height: 1.5; }
+    .summary-stats { display: flex; gap: 24px; }
+    .summary-stat { text-align: center; }
+    .summary-stat .val { font-size: 28px; font-weight: 700; font-feature-settings: 'tnum'; }
+    .summary-stat .lbl { font-size: 11px; color: #8B92A5; text-transform: uppercase; letter-spacing: .3px; }
+    /* Stats row */
+    .stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 16px; }
+    .stat { background: #fff; border: 1px solid #E4E7EF; border-radius: 10px; padding: 14px; box-shadow: 0 2px 8px rgba(17,24,39,.06); position: relative; overflow: hidden; }
+    .stat::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+    .stat.blue::before { background: #5B6ABF; }
+    .stat.green::before { background: #166534; }
+    .stat.amber::before { background: #92400E; }
+    .stat.violet::before { background: #7E22CE; }
+    .stat-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; margin-bottom: 10px; }
+    .stat-val { font-size: 26px; font-weight: 700; font-feature-settings: 'tnum'; }
+    .stat-lbl { font-size: 11px; color: #8B92A5; text-transform: uppercase; letter-spacing: .5px; margin-top: 2px; }
+    .card { background: #fff; border: 1px solid #E4E7EF; border-radius: 10px; padding: 14px; box-shadow: 0 2px 8px rgba(17,24,39,.06); }
+    .card-title { font-size: 13px; font-weight: 700; color: #8B92A5; letter-spacing: .44px; text-transform: uppercase; }
+    .card-sub { font-size: 14px; color: #8B92A5; }
+    .card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid #E4E7EF; }
+    .link { font-size: 13px; color: #5B6ABF; font-weight: 600; cursor: pointer; }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    /* Donut */
+    .donut-wrap { display: flex; align-items: center; gap: 24px; }
+    .donut-svg { width: 140px; height: 140px; flex-shrink: 0; }
+    .legend-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+    .legend-name { flex: 1; font-size: 12px; color: #495057; }
+    .legend-count { font-size: 12px; font-weight: 600; }
+    .legend-pct { font-size: 10px; color: #8B92A5; width: 28px; text-align: right; }
+    /* Status list */
+    .status-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+    .status-item + .status-item { border-top: 1px solid #F0F2F8; }
+    .status-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+    .status-name { flex: 1; font-size: 13px; }
+    .status-bar { width: 100px; height: 5px; background: #F0F2F8; border-radius: 3px; overflow: hidden; }
+    .status-fill { height: 100%; border-radius: 3px; }
+    .status-cnt { font-size: 12px; font-weight: 600; width: 40px; text-align: right; }
+    /* Heatmap mini */
+    .heatmap-mini { display: flex; gap: 2px; flex-wrap: wrap; margin-top: 8px; }
+    .heatmap-mini div { width: 11px; height: 11px; border-radius: 2px; }
+    .l0 { background: #EBEDF0; } .l1 { background: #9BE9A8; } .l2 { background: #40C463; } .l3 { background: #30A14E; } .l4 { background: #216E39; }
+    /* Activity compact */
+    .act-item { display: flex; align-items: center; gap: 8px; padding: 7px 0; }
+    .act-item + .act-item { border-top: 1px solid #F0F2F8; }
+    .act-av { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; flex-shrink: 0; }
+    .act-text { flex: 1; font-size: 12px; color: #495057; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .act-time { font-size: 10px; color: #8B92A5; flex-shrink: 0; }
+    /* Muni compact */
+    .muni-item { display: flex; align-items: center; gap: 8px; padding: 5px 0; }
+    .muni-rank { width: 20px; height: 20px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; }
+    .muni-name { flex: 1; font-size: 12px; font-weight: 500; }
+    .muni-cnt { font-size: 12px; font-weight: 600; }
+    /* Bar mini */
+    .bar-mini { display: flex; align-items: flex-end; gap: 3px; height: 60px; margin-top: 8px; }
+    .bar-mini div { flex: 1; background: linear-gradient(to bottom,#4A59AE,#5B6ABF); border-radius: 2px 2px 0 0; min-height: 2px; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="badge">LAYOUT B</div>
+  <div class="topbar">
+    <div><h1>Dashboard</h1><p class="sub">Overview of applicant management activity</p></div>
+    <div class="period"><span>This month</span><span class="active">This year</span><span>All time</span></div>
+  </div>
+
+  <!-- Summary banner -->
+  <div class="summary">
+    <div class="summary-main">
+      <h2>2026 Applicant Summary</h2>
+      <p>672 applications received this year across 8 municipalities. 4,710 applicants currently in process. Lingayen leads with 257 submissions.</p>
+    </div>
+    <div class="summary-stats">
+      <div class="summary-stat"><div class="val" style="color:#5B6ABF">25,000</div><div class="lbl">Total on file</div></div>
+      <div class="summary-stat"><div class="val" style="color:#166534">672</div><div class="lbl">This year</div></div>
+      <div class="summary-stat"><div class="val" style="color:#92400E">0</div><div class="lbl">Hired</div></div>
+    </div>
+  </div>
+
+  <!-- Stats with colored top borders + icons -->
+  <div class="stats">
+    <div class="stat blue"><div class="stat-icon" style="background:#EEF0FB;color:#5B6ABF">👥</div><div class="stat-val">25,000</div><div class="stat-lbl">Applicants on file</div></div>
+    <div class="stat green"><div class="stat-icon" style="background:#DCFCE7;color:#166534">📋</div><div class="stat-val">672</div><div class="stat-lbl">Applications YTD</div></div>
+    <div class="stat amber"><div class="stat-icon" style="background:#FEF3C7;color:#92400E">✅</div><div class="stat-val">0</div><div class="stat-lbl">Hired YTD</div></div>
+    <div class="stat violet"><div class="stat-icon" style="background:#F3E8FF;color:#7E22CE">⏳</div><div class="stat-val">4,710</div><div class="stat-lbl">On process</div></div>
+  </div>
+
+  <!-- Row: Status list + Donut + Activity -->
+  <div class="row3">
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Status Breakdown</div></div></div>
+      <div class="status-item"><div class="status-dot" style="background:#166534"></div><span class="status-name">Active File</span><div class="status-bar"><div class="status-fill" style="width:73%;background:#166534"></div></div><span class="status-cnt">25,929</span></div>
+      <div class="status-item"><div class="status-dot" style="background:#5B6ABF"></div><span class="status-name">On Process</span><div class="status-bar"><div class="status-fill" style="width:13%;background:#5B6ABF"></div></div><span class="status-cnt">4,710</span></div>
+      <div class="status-item"><div class="status-dot" style="background:#92400E"></div><span class="status-name">(blank)</span><div class="status-bar"><div class="status-fill" style="width:4%;background:#92400E"></div></div><span class="status-cnt">1,284</span></div>
+      <div class="status-item"><div class="status-dot" style="background:#7E22CE"></div><span class="status-name">Hired</span><div class="status-bar"><div class="status-fill" style="width:2%;background:#7E22CE"></div></div><span class="status-cnt">797</span></div>
+      <div class="status-item"><div class="status-dot" style="background:#8B92A5"></div><span class="status-name">Active Files</span><div class="status-bar"><div class="status-fill" style="width:2%;background:#8B92A5"></div></div><span class="status-cnt">662</span></div>
+      <div class="status-item"><div class="status-dot" style="background:#E74C5E"></div><span class="status-name">Applying for Promotion</span><div class="status-bar"><div class="status-fill" style="width:1%;background:#E74C5E"></div></div><span class="status-cnt">170</span></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Donut Overview</div></div></div>
+      <div class="donut-wrap">
+        <svg class="donut-svg" viewBox="0 0 140 140">
+          <circle cx="70" cy="70" r="52" fill="none" stroke="#166534" stroke-width="20" stroke-dasharray="118 208" stroke-dashoffset="0" transform="rotate(-90 70 70)"/>
+          <circle cx="70" cy="70" r="52" fill="none" stroke="#5B6ABF" stroke-width="20" stroke-dasharray="82 244" stroke-dashoffset="-118" transform="rotate(-90 70 70)"/>
+          <circle cx="70" cy="70" r="52" fill="none" stroke="#92400E" stroke-width="20" stroke-dasharray="26 300" stroke-dashoffset="-200" transform="rotate(-90 70 70)"/>
+          <circle cx="70" cy="70" r="52" fill="none" stroke="#7E22CE" stroke-width="20" stroke-dasharray="15 311" stroke-dashoffset="-226" transform="rotate(-90 70 70)"/>
+          <text x="70" y="67" text-anchor="middle" font-size="18" font-weight="700" fill="#111827">35,339</text>
+          <text x="70" y="82" text-anchor="middle" font-size="10" fill="#8B92A5">Total</text>
+        </svg>
+        <div>
+          <div class="legend-row"><div class="legend-dot" style="background:#166534"></div><span class="legend-name">Active File</span><span class="legend-count">73%</span></div>
+          <div class="legend-row"><div class="legend-dot" style="background:#5B6ABF"></div><span class="legend-name">On Process</span><span class="legend-count">13%</span></div>
+          <div class="legend-row"><div class="legend-dot" style="background:#92400E"></div><span class="legend-name">(blank)</span><span class="legend-count">4%</span></div>
+          <div class="legend-row"><div class="legend-dot" style="background:#7E22CE"></div><span class="legend-name">Hired</span><span class="legend-count">2%</span></div>
+          <div class="legend-row"><div class="legend-dot" style="background:#8B92A5"></div><span class="legend-name">Other</span><span class="legend-count">8%</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Recent Activity</div></div><span class="link">View logs</span></div>
+      <div class="act-item"><div class="act-av" style="background:#5B6ABF">RE</div><div class="act-text">red signed in</div><div class="act-time">now</div></div>
+      <div class="act-item"><div class="act-av" style="background:#5B6ABF">RE</div><div class="act-text">red signed in</div><div class="act-time">1h</div></div>
+      <div class="act-item"><div class="act-av" style="background:#166534">KA</div><div class="act-text">Failed sign-in ("kath")</div><div class="act-time">2h</div></div>
+      <div class="act-item"><div class="act-av" style="background:#92400E">DE</div><div class="act-text">des signed out</div><div class="act-time">2h</div></div>
+      <div class="act-item"><div class="act-av" style="background:#7E22CE">HP</div><div class="act-text">hara added applicant</div><div class="act-time">3h</div></div>
+    </div>
+  </div>
+
+  <!-- Row: Bar + Heatmap mini + Muni -->
+  <div class="row3">
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Monthly Trend</div><div class="card-sub">Last 12 months</div></div></div>
+      <div class="bar-mini">
+        <div style="height:74%"></div><div style="height:63%"></div><div style="height:20%"></div><div style="height:18%"></div><div style="height:52%"></div><div style="height:100%"></div><div style="height:54%"></div><div style="height:23%"></div><div style="height:47%"></div><div style="height:13%"></div><div style="height:4px"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px">
+        <span style="font-size:9px;color:#8B92A5">Sep</span><span style="font-size:9px;color:#8B92A5">Dec</span><span style="font-size:9px;color:#8B92A5">Mar</span><span style="font-size:9px;color:#8B92A5">Jun</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Activity Heatmap</div><div class="card-sub">Last 52 weeks</div></div></div>
+      <div class="heatmap-mini" id="miniheatmap"></div>
+      <div style="display:flex;align-items:center;gap:4px;justify-content:flex-end;margin-top:8px">
+        <span style="font-size:9px;color:#8B92A5">Less</span>
+        <div class="l0" style="width:11px;height:11px"></div><div class="l1" style="width:11px;height:11px"></div><div class="l2" style="width:11px;height:11px"></div><div class="l3" style="width:11px;height:11px"></div><div class="l4" style="width:11px;height:11px"></div>
+        <span style="font-size:9px;color:#8B92A5">More</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Top Municipalities</div></div><span class="link">View all</span></div>
+      <div class="muni-item"><div class="muni-rank" style="background:#FEF3C7;color:#92400E">1</div><span class="muni-name">Lingayen</span><span class="muni-cnt">257</span></div>
+      <div class="muni-item"><div class="muni-rank" style="background:#EFF1F6;color:#5B6479">2</div><span class="muni-name">Binmaley</span><span class="muni-cnt">73</span></div>
+      <div class="muni-item"><div class="muni-rank" style="background:#FED7AA;color:#9A3412">3</div><span class="muni-name">Bugallon</span><span class="muni-cnt">48</span></div>
+      <div class="muni-item"><div class="muni-rank" style="background:#F8F9FC;color:#8B92A5">4</div><span class="muni-name">San Carlos</span><span class="muni-cnt">48</span></div>
+      <div class="muni-item"><div class="muni-rank" style="background:#F8F9FC;color:#8B92A5">5</div><span class="muni-name">Dagupan</span><span class="muni-cnt">26</span></div>
+    </div>
+  </div>
+</div>
+<script>
+const mh=document.getElementById('miniheatmap');
+for(let i=0;i<364;i++){const d=document.createElement('div');const r=Math.random();d.className='heatmap-mini '+(''+[r<.3?'l0':r<.5?'l1':r<.7?'l2':r<.85?'l3':'l4']);mh.appendChild(d);}
+</script>
+</body>
+</html>

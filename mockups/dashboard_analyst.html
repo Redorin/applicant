@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Data Dense Analyst</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'JetBrains Mono', 'SF Mono', monospace; background: #0F172A; color: #E2E8F0; font-size: 13px; }
+
+    /* Top bar */
+    .topbar { height: 48px; background: #1E293B; border-bottom: 1px solid #334155; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; }
+    .topbar-left { display: flex; align-items: center; gap: 16px; }
+    .topbar-brand { font-weight: 700; color: #38BDF8; font-size: 14px; }
+    .topbar-sep { color: #475569; }
+    .topbar-section { color: #94A3B8; }
+    .topbar-right { display: flex; align-items: center; gap: 16px; color: #64748B; }
+    .topbar-indicator { display: flex; align-items: center; gap: 6px; }
+    .topbar-dot { width: 6px; height: 6px; background: #22C55E; border-radius: 50%; }
+
+    /* Content */
+    .content { padding: 16px; }
+
+    /* Metrics strip */
+    .metrics-strip { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; margin-bottom: 16px; }
+    .metric { background: #1E293B; border: 1px solid #334155; border-radius: 6px; padding: 12px; }
+    .metric-label { font-size: 10px; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .metric-value { font-size: 20px; font-weight: 700; color: #F1F5F9; }
+    .metric-delta { font-size: 11px; margin-top: 2px; }
+    .metric-delta.up { color: #22C55E; }
+    .metric-delta.down { color: #EF4444; }
+    .metric-spark { display: flex; align-items: flex-end; gap: 1px; height: 16px; margin-top: 6px; }
+    .metric-spark-bar { flex: 1; background: #334155; border-radius: 1px; }
+    .metric-spark-bar.active { background: #38BDF8; }
+
+    /* Grid layout */
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .grid-2even { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+
+    /* Panel */
+    .panel { background: #1E293B; border: 1px solid #334155; border-radius: 8px; overflow: hidden; }
+    .panel-header { padding: 12px 16px; border-bottom: 1px solid #334155; display: flex; align-items: center; justify-content: space-between; }
+    .panel-title { font-size: 11px; font-weight: 600; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px; }
+    .panel-badge { background: #334155; padding: 2px 8px; border-radius: 4px; font-size: 10px; color: #64748B; }
+    .panel-body { padding: 16px; }
+
+    /* Chart */
+    .chart { display: flex; align-items: flex-end; gap: 4px; height: 120px; }
+    .chart-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .chart-bar { width: 100%; background: #334155; border-radius: 2px 2px 0 0; transition: background 0.15s; }
+    .chart-bar:hover { background: #38BDF8; }
+    .chart-bar.highlight { background: #38BDF8; }
+    .chart-label { font-size: 9px; color: #64748B; }
+
+    /* Table */
+    .table { width: 100%; border-collapse: collapse; }
+    .table th { text-align: left; padding: 8px 12px; font-size: 10px; font-weight: 600; color: #64748B; text-transform: uppercase; border-bottom: 1px solid #334155; }
+    .table td { padding: 8px 12px; border-bottom: 1px solid #1E293B; }
+    .table tr:hover td { background: rgba(56, 189, 248, 0.05); }
+    .table-mono { font-family: inherit; color: #94A3B8; }
+    .table-highlight { color: #F1F5F9; font-weight: 600; }
+    .table-tag { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; }
+    .table-tag.green { background: #052E16; color: #22C55E; }
+    .table-tag.blue { background: #0C4A6E; color: #38BDF8; }
+    .table-tag.amber { background: #451A03; color: #FBBF24; }
+    .table-tag.purple { background: #3B0764; color: #C084FC; }
+
+    /* Horizontal bars */
+    .hbar { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
+    .hbar-label { width: 80px; font-size: 11px; color: #94A3B8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .hbar-track { flex: 1; height: 6px; background: #334155; border-radius: 3px; overflow: hidden; }
+    .hbar-fill { height: 100%; border-radius: 3px; }
+    .hbar-fill.cyan { background: #22D3EE; }
+    .hbar-fill.green { background: #22C55E; }
+    .hbar-fill.amber { background: #FBBF24; }
+    .hbar-fill.purple { background: #C084FC; }
+    .hbar-val { width: 35px; text-align: right; font-size: 11px; font-weight: 600; color: #F1F5F9; }
+
+    /* Status indicators */
+    .status-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #334155; }
+    .status-row:last-child { border-bottom: none; }
+    .status-indicator { width: 8px; height: 8px; border-radius: 2px; }
+    .status-indicator.green { background: #22C55E; }
+    .status-indicator.blue { background: #38BDF8; }
+    .status-indicator.amber { background: #FBBF24; }
+    .status-indicator.purple { background: #C084FC; }
+    .status-indicator.gray { background: #64748B; }
+    .status-name { flex: 1; font-size: 12px; color: #CBD5E1; }
+    .status-count { font-size: 14px; font-weight: 700; color: #F1F5F9; }
+    .status-pct { font-size: 11px; color: #64748B; width: 35px; text-align: right; }
+
+    /* Activity log */
+    .log-entry { display: flex; gap: 8px; padding: 6px 0; font-size: 12px; }
+    .log-time { color: #475569; width: 60px; flex-shrink: 0; }
+    .log-user { color: #38BDF8; width: 60px; flex-shrink: 0; }
+    .log-action { color: #94A3B8; flex: 1; }
+    .log-action strong { color: #E2E8F0; }
+
+    /* Heatmap */
+    .heatmap { display: grid; grid-template-columns: repeat(12, 1fr); gap: 3px; }
+    .heat-cell { aspect-ratio: 1; border-radius: 2px; }
+    .heat-cell.l0 { background: #1E293B; }
+    .heat-cell.l1 { background: #164E63; }
+    .heat-cell.l2 { background: #0E7490; }
+    .heat-cell.l3 { background: #0891B2; }
+    .heat-cell.l4 { background: #22D3EE; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-brand">HRMDO</span>
+      <span class="topbar-sep">|</span>
+      <span class="topbar-section">Applicant Analytics</span>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-indicator">
+        <div class="topbar-dot"></div>
+        LIVE
+      </div>
+      <span>2026-08-13 11:43:10</span>
+      <span>RED</span>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- Metrics strip -->
+    <div class="metrics-strip">
+      <div class="metric">
+        <div class="metric-label">Total</div>
+        <div class="metric-value">1,247</div>
+        <div class="metric-delta up">+12.5%</div>
+        <div class="metric-spark">
+          <div class="metric-spark-bar" style="height:40%"></div>
+          <div class="metric-spark-bar" style="height:55%"></div>
+          <div class="metric-spark-bar" style="height:35%"></div>
+          <div class="metric-spark-bar" style="height:70%"></div>
+          <div class="metric-spark-bar" style="height:45%"></div>
+          <div class="metric-spark-bar" style="height:80%"></div>
+          <div class="metric-spark-bar" style="height:60%"></div>
+          <div class="metric-spark-bar" style="height:90%"></div>
+          <div class="metric-spark-bar" style="height:75%"></div>
+          <div class="metric-spark-bar" style="height:95%"></div>
+          <div class="metric-spark-bar" style="height:85%"></div>
+          <div class="metric-spark-bar active" style="height:100%"></div>
+        </div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">YTD Apps</div>
+        <div class="metric-value">342</div>
+        <div class="metric-delta up">+8.2%</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Hired</div>
+        <div class="metric-value">28</div>
+        <div class="metric-delta up">+24.1%</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">On Process</div>
+        <div class="metric-value">156</div>
+        <div class="metric-delta down">-5.3%</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Interview</div>
+        <div class="metric-value">112</div>
+        <div class="metric-delta up">+3.1%</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Recommended</div>
+        <div class="metric-value">70</div>
+        <div class="metric-delta down">-2.1%</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Evaluated</div>
+        <div class="metric-value">44</div>
+        <div class="metric-delta up">+1.8%</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Archived</div>
+        <div class="metric-value">18</div>
+        <div class="metric-delta down">-12.0%</div>
+      </div>
+    </div>
+
+    <!-- Row 1 -->
+    <div class="grid-3">
+      <!-- Chart -->
+      <div class="panel" style="grid-column: span 2;">
+        <div class="panel-header">
+          <span class="panel-title">Monthly Applications</span>
+          <span class="panel-badge">12M</span>
+        </div>
+        <div class="panel-body">
+          <div class="chart">
+            <div class="chart-col"><div class="chart-bar" style="height:36%"></div><div class="chart-label">Jan</div></div>
+            <div class="chart-col"><div class="chart-bar" style="height:48%"></div><div class="chart-label">Feb</div></div>
+            <div class="chart-col"><div class="chart-bar" style="height:30%"></div><div class="chart-label">Mar</div></div>
+            <div class="chart-col"><div class="chart-bar" style="height:64%"></div><div class="chart-label">Apr</div></div>
+            <div class="chart-col"><div class="chart-bar" style="height:56%"></div><div class="chart-label">May</div></div>
+            <div class="chart-col"><div class="chart-bar" style="height:76%"></div><div class="chart-label">Jun</div></div>
+            <div class="chart-col"><div class="chart-bar" style="height:70%"></div><div class="chart-label">Jul</div></div>
+            <div class="chart-col"><div class="chart-bar highlight" style="height:84%"></div><div class="chart-label">Aug</div></div>
+            <div class="chart-col"><div class="chart-bar" style="height:60%"></div><div class="chart-label">Sep</div></div>
+            <div class="chart-col"><div class="chart-bar" style="height:90%"></div><div class="chart-label">Oct</div></div>
+            <div class="chart-col"><div class="chart-bar" style="height:80%"></div><div class="chart-label">Nov</div></div>
+            <div class="chart-col"><div class="chart-bar" style="height:100%"></div><div class="chart-label">Dec</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Status</span>
+        </div>
+        <div class="panel-body">
+          <div class="status-row">
+            <div class="status-indicator green"></div>
+            <span class="status-name">On Process</span>
+            <span class="status-count">156</span>
+            <span class="status-pct">35%</span>
+          </div>
+          <div class="status-row">
+            <div class="status-indicator blue"></div>
+            <span class="status-name">For Interview</span>
+            <span class="status-count">112</span>
+            <span class="status-pct">25%</span>
+          </div>
+          <div class="status-row">
+            <div class="status-indicator amber"></div>
+            <span class="status-name">Recommended</span>
+            <span class="status-count">70</span>
+            <span class="status-pct">18%</span>
+          </div>
+          <div class="status-row">
+            <div class="status-indicator purple"></div>
+            <span class="status-name">Hired</span>
+            <span class="status-count">44</span>
+            <span class="status-pct">12%</span>
+          </div>
+          <div class="status-row">
+            <div class="status-indicator gray"></div>
+            <span class="status-name">Evaluated</span>
+            <span class="status-count">28</span>
+            <span class="status-pct">10%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2 -->
+    <div class="grid-2even">
+      <!-- Top municipalities -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Top Municipalities</span>
+          <span class="panel-badge">TOP 8</span>
+        </div>
+        <div class="panel-body">
+          <div class="hbar"><span class="hbar-label">Calasiao</span><div class="hbar-track"><div class="hbar-fill cyan" style="width:100%"></div></div><span class="hbar-val">89</span></div>
+          <div class="hbar"><span class="hbar-label">Dagupan</span><div class="hbar-track"><div class="hbar-fill cyan" style="width:78%"></div></div><span class="hbar-val">69</span></div>
+          <div class="hbar"><span class="hbar-label">Mangaldan</span><div class="hbar-track"><div class="hbar-fill cyan" style="width:62%"></div></div><span class="hbar-val">55</span></div>
+          <div class="hbar"><span class="hbar-label">Binmaley</span><div class="hbar-track"><div class="hbar-fill cyan" style="width:48%"></div></div><span class="hbar-val">43</span></div>
+          <div class="hbar"><span class="hbar-label">Lingayen</span><div class="hbar-track"><div class="hbar-fill cyan" style="width:35%"></div></div><span class="hbar-val">31</span></div>
+          <div class="hbar"><span class="hbar-label">Basista</span><div class="hbar-track"><div class="hbar-fill cyan" style="width:28%"></div></div><span class="hbar-val">25</span></div>
+          <div class="hbar"><span class="hbar-label">Urdaneta</span><div class="hbar-track"><div class="hbar-fill cyan" style="width:22%"></div></div><span class="hbar-val">20</span></div>
+          <div class="hbar"><span class="hbar-label">San Carlos</span><div class="hbar-track"><div class="hbar-fill cyan" style="width:18%"></div></div><span class="hbar-val">16</span></div>
+        </div>
+      </div>
+
+      <!-- Activity log -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Activity Log</span>
+          <span class="panel-badge">LIVE</span>
+        </div>
+        <div class="panel-body" style="padding: 8px 16px;">
+          <div class="log-entry"><span class="log-time">11:43</span><span class="log-user">RED</span><span class="log-action">Signed in</span></div>
+          <div class="log-entry"><span class="log-time">11:28</span><span class="log-user">KATH</span><span class="log-action">Updated <strong>maria_santos</strong> → For Interview</span></div>
+          <div class="log-entry"><span class="log-time">11:15</span><span class="log-user">DES</span><span class="log-action">Added <strong>juan_dela_cruz</strong></span></div>
+          <div class="log-entry"><span class="log-time">10:42</span><span class="log-user">HARA</span><span class="log-action">Hired <strong>jose_reyes</strong></span></div>
+          <div class="log-entry"><span class="log-time">10:30</span><span class="log-user">LYNDON</span><span class="log-action">Generated report</span></div>
+          <div class="log-entry"><span class="log-time">09:55</span><span class="log-user">ANN</span><span class="log-action">Archived 3 records</span></div>
+          <div class="log-entry"><span class="log-time">09:12</span><span class="log-user">DES</span><span class="log-action">Added <strong>pedro_reyes</strong></span></div>
+          <div class="log-entry"><span class="log-time">08:45</span><span class="log-user">KATH</span><span class="log-action">Signed in</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 3 -->
+    <div class="grid-2even">
+      <!-- Recent table -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Recent Applications</span>
+        </div>
+        <div class="panel-body" style="padding: 0;">
+          <table class="table">
+            <thead>
+              <tr><th>ID</th><th>Name</th><th>Municipality</th><th>Status</th><th>Date</th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="table-mono">#1247</td><td class="table-highlight">Juan Dela Cruz</td><td>Calasiao</td><td><span class="table-tag green">ON PROCESS</span></td><td class="table-mono">08-10</td></tr>
+              <tr><td class="table-mono">#1246</td><td class="table-highlight">Maria Santos</td><td>Dagupan</td><td><span class="table-tag blue">INTERVIEW</span></td><td class="table-mono">08-08</td></tr>
+              <tr><td class="table-mono">#1245</td><td class="table-highlight">Pedro Reyes</td><td>Mangaldan</td><td><span class="table-tag amber">RECOMMENDED</span></td><td class="table-mono">08-05</td></tr>
+              <tr><td class="table-mono">#1244</td><td class="table-highlight">Ana Garcia</td><td>Binmaley</td><td><span class="table-tag purple">EVALUATED</span></td><td class="table-mono">08-03</td></tr>
+              <tr><td class="table-mono">#1243</td><td class="table-highlight">Luis Bautista</td><td>Lingayen</td><td><span class="table-tag green">ON PROCESS</span></td><td class="table-mono">08-01</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Heatmap -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Application Heatmap</span>
+          <span class="panel-badge">12 WEEKS</span>
+        </div>
+        <div class="panel-body">
+          <div style="margin-bottom: 8px; display: flex; justify-content: space-between;">
+            <span style="font-size: 10px; color: #475569;">Mon</span>
+            <span style="font-size: 10px; color: #475569;">Tue</span>
+            <span style="font-size: 10px; color: #475569;">Wed</span>
+            <span style="font-size: 10px; color: #475569;">Thu</span>
+            <span style="font-size: 10px; color: #475569;">Fri</span>
+            <span style="font-size: 10px; color: #475569;">Sat</span>
+          </div>
+          <div class="heatmap">
+            <div class="heat-cell l2"></div><div class="heat-cell l3"></div><div class="heat-cell l1"></div><div class="heat-cell l4"></div><div class="heat-cell l2"></div><div class="heat-cell l0"></div>
+            <div class="heat-cell l1"></div><div class="heat-cell l2"></div><div class="heat-cell l3"></div><div class="heat-cell l2"></div><div class="heat-cell l4"></div><div class="heat-cell l0"></div>
+            <div class="heat-cell l3"></div><div class="heat-cell l1"></div><div class="heat-cell l4"></div><div class="heat-cell l3"></div><div class="heat-cell l2"></div><div class="heat-cell l0"></div>
+            <div class="heat-cell l2"></div><div class="heat-cell l4"></div><div class="heat-cell l2"></div><div class="heat-cell l1"></div><div class="heat-cell l3"></div><div class="heat-cell l0"></div>
+            <div class="heat-cell l4"></div><div class="heat-cell l3"></div><div class="heat-cell l1"></div><div class="heat-cell l2"></div><div class="heat-cell l4"></div><div class="heat-cell l0"></div>
+            <div class="heat-cell l1"></div><div class="heat-cell l2"></div><div class="heat-cell l3"></div><div class="heat-cell l4"></div><div class="heat-cell l2"></div><div class="heat-cell l0"></div>
+            <div class="heat-cell l3"></div><div class="heat-cell l1"></div><div class="heat-cell l2"></div><div class="heat-cell l3"></div><div class="heat-cell l1"></div><div class="heat-cell l0"></div>
+            <div class="heat-cell l2"></div><div class="heat-cell l3"></div><div class="heat-cell l4"></div><div class="heat-cell l2"></div><div class="heat-cell l3"></div><div class="heat-cell l0"></div>
+            <div class="heat-cell l1"></div><div class="heat-cell l2"></div><div class="heat-cell l1"></div><div class="heat-cell l3"></div><div class="heat-cell l4"></div><div class="heat-cell l0"></div>
+            <div class="heat-cell l4"></div><div class="heat-cell l1"></div><div class="heat-cell l3"></div><div class="heat-cell l2"></div><div class="heat-cell l1"></div><div class="heat-cell l0"></div>
+            <div class="heat-cell l2"></div><div class="heat-cell l4"></div><div class="heat-cell l2"></div><div class="heat-cell l4"></div><div class="heat-cell l3"></div><div class="heat-cell l0"></div>
+            <div class="heat-cell l3"></div><div class="heat-cell l2"></div><div class="heat-cell l4"></div><div class="heat-cell l1"></div><div class="heat-cell l4"></div><div class="heat-cell l0"></div>
+          </div>
+          <div style="margin-top: 12px; display: flex; align-items: center; gap: 4px; justify-content: flex-end;">
+            <span style="font-size: 10px; color: #475569;">Less</span>
+            <div class="heat-cell l0" style="width: 12px; height: 12px;"></div>
+            <div class="heat-cell l1" style="width: 12px; height: 12px;"></div>
+            <div class="heat-cell l2" style="width: 12px; height: 12px;"></div>
+            <div class="heat-cell l3" style="width: 12px; height: 12px;"></div>
+            <div class="heat-cell l4" style="width: 12px; height: 12px;"></div>
+            <span style="font-size: 10px; color: #475569;">More</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

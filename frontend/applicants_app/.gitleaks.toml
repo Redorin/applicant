@@ -1,0 +1,53 @@
+title = "HRMDO Gitleaks Configuration"
+
+[allowlist]
+  description = "Global allowlist"
+  paths = [
+    '''pubspec\.lock$''',
+    '''\.gitleaks\.toml$''',
+  ]
+
+[[rules]]
+  id = "sentry-dsn"
+  description = "Sentry DSN"
+  regex = '''(?i)(sentry[_\-]?dsn|SENTRY_DSN)[^\S\n]*[:=][^\S\n]*['"]?([a-zA-Z0-9]+@[a-zA-Z0-9]+)'''
+  tags = ["key", "sentry"]
+
+[[rules]]
+  id = "api-key-generic"
+  description = "Generic API key"
+  regex = '''(?i)(api[_\-]?key|apikey|api[_\-]?secret)[^\S\n]*[:=][^\S\n]*['"]([a-zA-Z0-9\-_]{20,})['"]'''
+  tags = ["key", "generic"]
+
+[[rules]]
+  id = "password-in-code"
+  description = "Password hardcoded in source"
+  regex = '''(?i)(password|passwd|pwd)[^\S\n]*[:=][^\S\n]*['"]([^'"]{6,})['"]'''
+  tags = ["password"]
+
+[[rules]]
+  id = "jwt-token"
+  description = "JWT token"
+  regex = '''eyJ[a-zA-Z0-9\-_]+\.eyJ[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+'''
+  tags = ["token", "jwt"]
+
+[[rules]]
+  id = "private-key"
+  description = "Private key"
+  regex = '''-----BEGIN (RSA |EC |DSA )?PRIVATE KEY-----'''
+  tags = ["key", "private"]
+
+[[rules]]
+  id = "connection-string"
+  description = "Database connection string"
+  regex = '''(?i)(mysql|postgres|mongodb|redis|sqlite)://[^\s'"]+'''
+  tags = ["database", "connection"]
+
+[[rules]]
+  id = "employee-id-pattern"
+  description = "Hardcoded employee/test IDs (advisory)"
+  regex = '''(?i)(test[_\-]?(employee|staff|user)[_\-]?id)[^\S\n]*[:=][^\S\n]*['"]([A-Z]{2}\d{6})['"]'''
+  tags = ["pii", "employee"]
+  [[rules.allowlist]]
+    description = "Allow test fixtures"
+    paths = ['''test/''', '''mockups/''']

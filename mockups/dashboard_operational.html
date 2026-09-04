@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Operational View</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #F0F2F5; color: #1A1A2E; }
+
+    /* Header band - official government style */
+    .header-band { background: linear-gradient(135deg, #1A365D 0%, #2D3748 100%); padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; }
+    .header-left { display: flex; align-items: center; gap: 16px; }
+    .header-seal { width: 36px; height: 36px; background: #C9A227; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .header-text { color: #fff; }
+    .header-title { font-size: 14px; font-weight: 600; }
+    .header-sub { font-size: 11px; color: #A0AEC0; }
+    .header-right { display: flex; align-items: center; gap: 16px; color: #A0AEC0; font-size: 12px; }
+    .header-status { display: flex; align-items: center; gap: 6px; }
+    .header-status-dot { width: 8px; height: 8px; background: #48BB78; border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+    /* Navigation tabs */
+    .nav-tabs { background: #fff; border-bottom: 1px solid #E2E8F0; padding: 0 24px; display: flex; gap: 0; }
+    .nav-tab { padding: 14px 20px; font-size: 13px; font-weight: 500; color: #64748B; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; }
+    .nav-tab:hover { color: #1A365D; }
+    .nav-tab.active { color: #1A365D; border-bottom-color: #C9A227; font-weight: 600; }
+    .nav-tab-badge { margin-left: 6px; background: #E53E3E; color: #fff; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 10px; }
+
+    /* Main content */
+    .main { padding: 20px 24px; }
+
+    /* Quick stats - horizontal strip */
+    .quick-stats { display: flex; gap: 12px; margin-bottom: 20px; }
+    .quick-stat { flex: 1; background: #fff; border-radius: 10px; padding: 16px; display: flex; align-items: center; gap: 14px; border: 1px solid #E2E8F0; cursor: pointer; transition: all 0.15s; }
+    .quick-stat:hover { border-color: #CBD5E0; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .quick-stat-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .quick-stat-icon.blue { background: #EBF4FF; }
+    .quick-stat-icon.green { background: #E6FFED; }
+    .quick-stat-icon.amber { background: #FFF8E1; }
+    .quick-stat-icon.red { background: #FFEDEF; }
+    .quick-stat-value { font-size: 24px; font-weight: 700; color: #1A1A2E; }
+    .quick-stat-label { font-size: 12px; color: #718096; }
+    .quick-stat-trend { font-size: 11px; font-weight: 600; margin-top: 2px; }
+    .quick-stat-trend.up { color: #38A169; }
+    .quick-stat-trend.down { color: #E53E3E; }
+
+    /* Two column layout */
+    .two-col { display: grid; grid-template-columns: 1fr 380px; gap: 20px; }
+
+    /* Left column */
+    .left-col { display: flex; flex-direction: column; gap: 20px; }
+
+    /* Right column */
+    .right-col { display: flex; flex-direction: column; gap: 20px; }
+
+    /* Card */
+    .card { background: #fff; border-radius: 12px; border: 1px solid #E2E8F0; overflow: hidden; }
+    .card-header { padding: 16px 20px; border-bottom: 1px solid #EDF2F7; display: flex; align-items: center; justify-content: space-between; }
+    .card-title { font-size: 14px; font-weight: 600; color: #1A1A2E; }
+    .card-link { font-size: 12px; color: #4299E1; cursor: pointer; text-decoration: none; }
+    .card-link:hover { text-decoration: underline; }
+    .card-body { padding: 16px 20px; }
+
+    /* Workload section */
+    .workload-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+    .workload-item { text-align: center; padding: 12px 8px; border-radius: 8px; background: #F7FAFC; cursor: pointer; transition: background 0.15s; }
+    .workload-item:hover { background: #EDF2F7; }
+    .workload-item.highlight { background: #EBF4FF; border: 1px solid #BEE3F8; }
+    .workload-avatar { width: 32px; height: 32px; border-radius: 8px; margin: 0 auto 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; }
+    .workload-name { font-size: 11px; color: #4A5568; font-weight: 500; }
+    .workload-count { font-size: 18px; font-weight: 700; color: #1A1A2E; margin-top: 2px; }
+    .workload-label { font-size: 10px; color: #A0AEC0; }
+
+    /* Pipeline / Kanban style */
+    .pipeline { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; }
+    .pipeline-col { min-width: 200px; flex: 1; }
+    .pipeline-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding: 0 4px; }
+    .pipeline-title { font-size: 12px; font-weight: 600; color: #4A5568; display: flex; align-items: center; gap: 6px; }
+    .pipeline-count { background: #EDF2F7; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; color: #718096; }
+    .pipeline-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .pipeline-cards { display: flex; flex-direction: column; gap: 8px; }
+    .pipeline-card { background: #F7FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 12px; cursor: pointer; transition: all 0.15s; }
+    .pipeline-card:hover { border-color: #CBD5E0; background: #fff; }
+    .pipeline-card-name { font-size: 13px; font-weight: 600; color: #1A1A2E; margin-bottom: 4px; }
+    .pipeline-card-meta { font-size: 11px; color: #718096; display: flex; align-items: center; gap: 8px; }
+    .pipeline-card-tag { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+    .pipeline-card-tag.municipality { background: #EBF4FF; color: #2B6CB0; }
+    .pipeline-card-tag.date { background: #F7FAFC; color: #718096; }
+
+    /* Table */
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th { text-align: left; padding: 10px 12px; font-size: 11px; font-weight: 600; color: #718096; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #EDF2F7; }
+    .data-table td { padding: 12px; font-size: 13px; color: #4A5568; border-bottom: 1px solid #F7FAFC; }
+    .data-table tr:hover td { background: #F7FAFC; }
+    .data-table-name { font-weight: 600; color: #1A1A2E; }
+    .data-table-status { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+    .data-table-status.on-process { background: #C6F6D5; color: #276749; }
+    .data-table-status.for-interview { background: #BEE3F8; color: #2C5282; }
+    .data-table-status.recommended { background: #FEFCBF; color: #975A16; }
+    .data-table-status.evaluated { background: #E9D8FD; color: #553C9A; }
+
+    /* Activity feed - compact */
+    .activity-compact { display: flex; flex-direction: column; }
+    .activity-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid #F7FAFC; }
+    .activity-row:last-child { border-bottom: none; }
+    .activity-time { font-size: 11px; color: #A0AEC0; width: 50px; flex-shrink: 0; padding-top: 2px; }
+    .activity-body { flex: 1; }
+    .activity-desc { font-size: 13px; color: #4A5568; line-height: 1.4; }
+    .activity-desc strong { color: #1A1A2E; font-weight: 600; }
+    .activity-type { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 4px; }
+
+    /* Urgent / attention items */
+    .alert-strip { display: flex; gap: 12px; margin-bottom: 20px; }
+    .alert-card { flex: 1; padding: 14px 16px; border-radius: 10px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.15s; }
+    .alert-card.warning { background: #FFFBEB; border: 1px solid #F6E05E; }
+    .alert-card.warning:hover { background: #FEFCBF; }
+    .alert-card.info { background: #EBF8FF; border: 1px solid #90CDF4; }
+    .alert-card.info:hover { background: #BEE3F8; }
+    .alert-icon { font-size: 20px; }
+    .alert-content { flex: 1; }
+    .alert-title { font-size: 13px; font-weight: 600; color: #1A1A2E; }
+    .alert-desc { font-size: 12px; color: #718096; margin-top: 2px; }
+    .alert-action { font-size: 12px; font-weight: 600; color: #4299E1; }
+  </style>
+</head>
+<body>
+  <!-- Official header band -->
+  <div class="header-band">
+    <div class="header-left">
+      <div class="header-seal">🏛️</div>
+      <div class="header-text">
+        <div class="header-title">HRMDO — Applicant Management System</div>
+        <div class="header-sub">Human Resource Management and Development Office</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="header-status">
+        <div class="header-status-dot"></div>
+        System Online
+      </div>
+      <span>Thursday, August 13, 2026</span>
+      <span>|</span>
+      <span>Reddrick Gonzales</span>
+    </div>
+  </div>
+
+  <!-- Navigation tabs -->
+  <div class="nav-tabs">
+    <div class="nav-tab active">Dashboard</div>
+    <div class="nav-tab">Applicants <span class="nav-tab-badge">12</span></div>
+    <div class="nav-tab">Applications</div>
+    <div class="nav-tab">For Interview</div>
+    <div class="nav-tab">Recommended</div>
+    <div class="nav-tab">Hired</div>
+    <div class="nav-tab">Reports</div>
+  </div>
+
+  <!-- Main content -->
+  <div class="main">
+    <!-- Alert strip -->
+    <div class="alert-strip">
+      <div class="alert-card warning">
+        <div class="alert-icon">⚠️</div>
+        <div class="alert-content">
+          <div class="alert-title">12 applications pending for 30+ days</div>
+          <div class="alert-desc">These require immediate attention to avoid stale applications</div>
+        </div>
+        <div class="alert-action">Review →</div>
+      </div>
+      <div class="alert-card info">
+        <div class="alert-icon">📋</div>
+        <div class="alert-content">
+          <div class="alert-title">8 interviews scheduled this week</div>
+          <div class="alert-desc">Upcoming interviews for On Process applicants</div>
+        </div>
+        <div class="alert-action">View Schedule →</div>
+      </div>
+    </div>
+
+    <!-- Quick stats -->
+    <div class="quick-stats">
+      <div class="quick-stat">
+        <div class="quick-stat-icon blue">👥</div>
+        <div>
+          <div class="quick-stat-value">1,247</div>
+          <div class="quick-stat-label">Total Applicants</div>
+          <div class="quick-stat-trend up">↑ 12.5%</div>
+        </div>
+      </div>
+      <div class="quick-stat">
+        <div class="quick-stat-icon green">📋</div>
+        <div>
+          <div class="quick-stat-value">342</div>
+          <div class="quick-stat-label">Applications (YTD)</div>
+          <div class="quick-stat-trend up">↑ 8.2%</div>
+        </div>
+      </div>
+      <div class="quick-stat">
+        <div class="quick-stat-icon amber">✅</div>
+        <div>
+          <div class="quick-stat-value">28</div>
+          <div class="quick-stat-label">Hired (YTD)</div>
+          <div class="quick-stat-trend up">↑ 24.1%</div>
+        </div>
+      </div>
+      <div class="quick-stat">
+        <div class="quick-stat-icon red">⏳</div>
+        <div>
+          <div class="quick-stat-value">156</div>
+          <div class="quick-stat-label">On Process</div>
+          <div class="quick-stat-trend down">↓ 5.3%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Two column layout -->
+    <div class="two-col">
+      <!-- Left column -->
+      <div class="left-col">
+        <!-- Application Pipeline -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Application Pipeline</span>
+            <a class="card-link">View all →</a>
+          </div>
+          <div class="card-body">
+            <div class="pipeline">
+              <!-- On Process -->
+              <div class="pipeline-col">
+                <div class="pipeline-header">
+                  <div class="pipeline-title">
+                    <div class="pipeline-dot" style="background:#48BB78"></div>
+                    On Process
+                  </div>
+                  <span class="pipeline-count">156</span>
+                </div>
+                <div class="pipeline-cards">
+                  <div class="pipeline-card">
+                    <div class="pipeline-card-name">Juan Dela Cruz</div>
+                    <div class="pipeline-card-meta">
+                      <span class="pipeline-card-tag municipality">Calasiao</span>
+                      <span class="pipeline-card-tag date">Aug 10</span>
+                    </div>
+                  </div>
+                  <div class="pipeline-card">
+                    <div class="pipeline-card-name">Maria Santos</div>
+                    <div class="pipeline-card-meta">
+                      <span class="pipeline-card-tag municipality">Dagupan</span>
+                      <span class="pipeline-card-tag date">Aug 8</span>
+                    </div>
+                  </div>
+                  <div class="pipeline-card">
+                    <div class="pipeline-card-name">Pedro Reyes</div>
+                    <div class="pipeline-card-meta">
+                      <span class="pipeline-card-tag municipality">Mangaldan</span>
+                      <span class="pipeline-card-tag date">Aug 5</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- For Interview -->
+              <div class="pipeline-col">
+                <div class="pipeline-header">
+                  <div class="pipeline-title">
+                    <div class="pipeline-dot" style="background:#4299E1"></div>
+                    For Interview
+                  </div>
+                  <span class="pipeline-count">112</span>
+                </div>
+                <div class="pipeline-cards">
+                  <div class="pipeline-card">
+                    <div class="pipeline-card-name">Ana Garcia</div>
+                    <div class="pipeline-card-meta">
+                      <span class="pipeline-card-tag municipality">Binmaley</span>
+                      <span class="pipeline-card-tag date">Aug 12</span>
+                    </div>
+                  </div>
+                  <div class="pipeline-card">
+                    <div class="pipeline-card-name">Luis Bautista</div>
+                    <div class="pipeline-card-meta">
+                      <span class="pipeline-card-tag municipality">Lingayen</span>
+                      <span class="pipeline-card-tag date">Aug 11</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Recommended -->
+              <div class="pipeline-col">
+                <div class="pipeline-header">
+                  <div class="pipeline-title">
+                    <div class="pipeline-dot" style="background:#ECC94B"></div>
+                    Recommended
+                  </div>
+                  <span class="pipeline-count">70</span>
+                </div>
+                <div class="pipeline-cards">
+                  <div class="pipeline-card">
+                    <div class="pipeline-card-name">Sofia Torres</div>
+                    <div class="pipeline-card-meta">
+                      <span class="pipeline-card-tag municipality">Calasiao</span>
+                      <span class="pipeline-card-tag date">Aug 9</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Evaluated -->
+              <div class="pipeline-col">
+                <div class="pipeline-header">
+                  <div class="pipeline-title">
+                    <div class="pipeline-dot" style="background:#9F7AEA"></div>
+                    Evaluated
+                  </div>
+                  <span class="pipeline-count">44</span>
+                </div>
+                <div class="pipeline-cards">
+                  <div class="pipeline-card">
+                    <div class="pipeline-card-name">Miguel Cruz</div>
+                    <div class="pipeline-card-meta">
+                      <span class="pipeline-card-tag municipality">Dagupan</span>
+                      <span class="pipeline-card-tag date">Aug 7</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent applications table -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Recent Applications</span>
+            <a class="card-link">View all →</a>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Applicant</th>
+                  <th>Municipality</th>
+                  <th>Position</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="data-table-name">Juan Dela Cruz</td>
+                  <td>Calasiao</td>
+                  <td>Admin Aide</td>
+                  <td><span class="data-table-status on-process">● On Process</span></td>
+                  <td>Aug 10, 2026</td>
+                </tr>
+                <tr>
+                  <td class="data-table-name">Maria Santos</td>
+                  <td>Dagupan City</td>
+                  <td>Clerk II</td>
+                  <td><span class="data-table-status for-interview">● For Interview</span></td>
+                  <td>Aug 8, 2026</td>
+                </tr>
+                <tr>
+                  <td class="data-table-name">Pedro Reyes</td>
+                  <td>Mangaldan</td>
+                  <td>Admin Aide</td>
+                  <td><span class="data-table-status recommended">● Recommended</span></td>
+                  <td>Aug 5, 2026</td>
+                </tr>
+                <tr>
+                  <td class="data-table-name">Ana Garcia</td>
+                  <td>Binmaley</td>
+                  <td>Engineer III</td>
+                  <td><span class="data-table-status evaluated">● Evaluated</span></td>
+                  <td>Aug 3, 2026</td>
+                </tr>
+                <tr>
+                  <td class="data-table-name">Luis Bautista</td>
+                  <td>Lingayen</td>
+                  <td>Admin Officer</td>
+                  <td><span class="data-table-status on-process">● On Process</span></td>
+                  <td>Aug 1, 2026</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right column -->
+      <div class="right-col">
+        <!-- Workload by officer -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Officer Workload</span>
+            <a class="card-link">Details →</a>
+          </div>
+          <div class="card-body">
+            <div class="workload-grid">
+              <div class="workload-item highlight">
+                <div class="workload-avatar" style="background:#E53E3E">DS</div>
+                <div class="workload-name">Des S.</div>
+                <div class="workload-count">34</div>
+                <div class="workload-label">assigned</div>
+              </div>
+              <div class="workload-item">
+                <div class="workload-avatar" style="background:#3182CE">KT</div>
+                <div class="workload-name">Kath T.</div>
+                <div class="workload-count">28</div>
+                <div class="workload-label">assigned</div>
+              </div>
+              <div class="workload-item">
+                <div class="workload-avatar" style="background:#38A169">HP</div>
+                <div class="workload-name">Hara P.</div>
+                <div class="workload-count">25</div>
+                <div class="workload-label">assigned</div>
+              </div>
+              <div class="workload-item">
+                <div class="workload-avatar" style="background:#D69E2E">AV</div>
+                <div class="workload-name">Ann V.</div>
+                <div class="workload-count">22</div>
+                <div class="workload-label">assigned</div>
+              </div>
+              <div class="workload-item">
+                <div class="workload-avatar" style="background:#805AD5">LF</div>
+                <div class="workload-name">Lyndon F.</div>
+                <div class="workload-count">19</div>
+                <div class="workload-label">assigned</div>
+              </div>
+              <div class="workload-item">
+                <div class="workload-avatar" style="background:#718096">RG</div>
+                <div class="workload-name">Reddrick G.</div>
+                <div class="workload-count">28</div>
+                <div class="workload-label">assigned</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Activity feed -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Recent Activity</span>
+            <a class="card-link">View logs →</a>
+          </div>
+          <div class="card-body" style="padding: 12px 20px;">
+            <div class="activity-compact">
+              <div class="activity-row">
+                <div class="activity-time">2m ago</div>
+                <div class="activity-body">
+                  <div class="activity-desc"><span class="activity-type" style="background:#48BB78"></span><strong>Reddrick G.</strong> signed in</div>
+                </div>
+              </div>
+              <div class="activity-row">
+                <div class="activity-time">15m ago</div>
+                <div class="activity-body">
+                  <div class="activity-desc"><span class="activity-type" style="background:#4299E1"></span><strong>Des S.</strong> added <strong>Juan Dela Cruz</strong></div>
+                </div>
+              </div>
+              <div class="activity-row">
+                <div class="activity-time">1h ago</div>
+                <div class="activity-body">
+                  <div class="activity-desc"><span class="activity-type" style="background:#ECC94B"></span><strong>Kath T.</strong> updated status for <strong>Maria Santos</strong></div>
+                </div>
+              </div>
+              <div class="activity-row">
+                <div class="activity-time">2h ago</div>
+                <div class="activity-body">
+                  <div class="activity-desc"><span class="activity-type" style="background:#9F7AEA"></span><strong>Hara P.</strong> hired <strong>Jose Reyes</strong></div>
+                </div>
+              </div>
+              <div class="activity-row">
+                <div class="activity-time">3h ago</div>
+                <div class="activity-body">
+                  <div class="activity-desc"><span class="activity-type" style="background:#48BB78"></span><strong>Lyndon F.</strong> generated report</div>
+                </div>
+              </div>
+              <div class="activity-row">
+                <div class="activity-time">4h ago</div>
+                <div class="activity-body">
+                  <div class="activity-desc"><span class="activity-type" style="background:#4299E1"></span><strong>Ann V.</strong> archived 3 applicants</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top municipalities mini -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Top Sources</span>
+            <a class="card-link">Map view →</a>
+          </div>
+          <div class="card-body">
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 12px; color: #718096; width: 20px;">1</span>
+                <span style="flex: 1; font-size: 13px; color: #1A1A2E; font-weight: 500;">Calasiao</span>
+                <div style="width: 100px; height: 6px; background: #EDF2F7; border-radius: 3px; overflow: hidden;"><div style="width: 100%; height: 100%; background: #4299E1; border-radius: 3px;"></div></div>
+                <span style="font-size: 13px; font-weight: 600; color: #1A1A2E; width: 30px; text-align: right;">89</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 12px; color: #718096; width: 20px;">2</span>
+                <span style="flex: 1; font-size: 13px; color: #1A1A2E; font-weight: 500;">Dagupan City</span>
+                <div style="width: 100px; height: 6px; background: #EDF2F7; border-radius: 3px; overflow: hidden;"><div style="width: 78%; height: 100%; background: #4299E1; border-radius: 3px;"></div></div>
+                <span style="font-size: 13px; font-weight: 600; color: #1A1A2E; width: 30px; text-align: right;">69</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 12px; color: #718096; width: 20px;">3</span>
+                <span style="flex: 1; font-size: 13px; color: #1A1A2E; font-weight: 500;">Mangaldan</span>
+                <div style="width: 100px; height: 6px; background: #EDF2F7; border-radius: 3px; overflow: hidden;"><div style="width: 62%; height: 100%; background: #4299E1; border-radius: 3px;"></div></div>
+                <span style="font-size: 13px; font-weight: 600; color: #1A1A2E; width: 30px; text-align: right;">55</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 12px; color: #718096; width: 20px;">4</span>
+                <span style="flex: 1; font-size: 13px; color: #1A1A2E; font-weight: 500;">Binmaley</span>
+                <div style="width: 100px; height: 6px; background: #EDF2F7; border-radius: 3px; overflow: hidden;"><div style="width: 48%; height: 100%; background: #4299E1; border-radius: 3px;"></div></div>
+                <span style="font-size: 13px; font-weight: 600; color: #1A1A2E; width: 30px; text-align: right;">43</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 12px; color: #718096; width: 20px;">5</span>
+                <span style="flex: 1; font-size: 13px; color: #1A1A2E; font-weight: 500;">Lingayen</span>
+                <div style="width: 100px; height: 6px; background: #EDF2F7; border-radius: 3px; overflow: hidden;"><div style="width: 35%; height: 100%; background: #4299E1; border-radius: 3px;"></div></div>
+                <span style="font-size: 13px; font-weight: 600; color: #1A1A2E; width: 30px; text-align: right;">31</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

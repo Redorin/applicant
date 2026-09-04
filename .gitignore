@@ -1,0 +1,20 @@
+# Flutter
+frontend/applicants_app/.dart_tool/
+frontend/applicants_app/build/
+frontend/applicants_app/windows/flutter/ephemeral/
+frontend/applicants_app/.flutter-plugins-dependencies
+.idea/
+*.iml
+
+# .NET
+backend/ApplicantsApi/bin/
+backend/ApplicantsApi/obj/
+
+# Data — PII must never be committed
+Database/*.bak
+*.bak
+
+# Deployed binaries (scripts stay tracked)
+deploy/api/
+deploy/app/
+deploy/installer/Output/
